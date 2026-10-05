@@ -1,6 +1,6 @@
 # Verification and publication status
 
-Checked 2026-10-05 UTC. The public [HaydenMay/Viewport repository](https://github.com/HaydenMay/Viewport) and [GitHub Pages site](https://haydenmay.github.io/Viewport/) are published. Milestone 1.6 has completed local validation; deployed verification is recorded below after publication.
+Checked 2026-10-05 UTC. The public [HaydenMay/Viewport repository](https://github.com/HaydenMay/Viewport) and [GitHub Pages site](https://haydenmay.github.io/Viewport/) are published. Milestone 1.6 has completed local validation and is committed to main. Pages deployment is pending because GitHub Actions is unavailable, as reported by the user; no deployed 1.6 success is claimed.
 
 ## Milestone 1.6 local evidence
 
@@ -54,7 +54,9 @@ The independent reviewer could not run because its session returned a usage-limi
 
 ## Milestone 1.6 deployed checks
 
-Pending publication and live verification. Local build evidence alone does not establish deployed correctness.
+Application commit `a169ef18babaea8e3296fd7c8af71a42a0c45183` is published on main. [Pages run 37372529348](https://github.com/HaydenMay/Viewport/actions/runs/37372529348) was queued when checked. The user reported that GitHub Actions is down and explicitly instructed us not to wait. The live site still showed Prototype 1.5 at the last check. Deployment and live 1.6 verification therefore remain pending. No workflow or hosting configuration was changed. Local build evidence alone does not establish deployed correctness.
+
+Once Actions resumes and the site shows Prototype 1.6, verify the Big 6 controls, Paramount+/Peacock title actions, and opt-in diagnostics before running the physical-device checklist. Stop development pending those real-device results.
 
 ## Native checks still required
 
