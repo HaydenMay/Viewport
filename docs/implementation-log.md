@@ -10,3 +10,7 @@ Binding brief and scope: the user's first-milestone request, recorded in the des
 Decisions: retain the requested GitHub Pages hosting destination; do not substitute Sites. Use illustrative metadata and offers to avoid unauthorized API credentials or official poster reuse. Keep native-launch capability explicitly unverified. Build the smallest SwiftUI probe next, before a full native interface.
 
 Outstanding external operation: GitHub connector lacks repository-creation and Pages-settings actions. The source is ready; browser fallback permission is required to finish publication. Live Pages verification is not complete.
+
+## Milestone 1.5 — 2026-10-05
+
+User tested the initial build and reported provider app/web home-menu opening. Added 17 manually observed official title/season destinations in a separate launch registry, with provider-specific resolution and four explicit Max fallbacks. Native routing remains untested. Added behavior regressions (homepage-only red → title destinations green), destination labels, evidence log, and an updated Apple test matrix. Verification: 24 tests, TypeScript/build, production browser QA, independent review, successful GitHub deployment, and live interaction checks. See verification.md and title-link-evidence.md.
