@@ -1,8 +1,8 @@
-# Official title-link evidence — milestone 1.5
+# Official title-link evidence — Big 6 milestone 1.6
 
-Located manually on 2026-10-05 UTC using public web search and retrieval of official provider pages. These are 17 title/season-page candidates across four providers, not scraped catalog data, subscription-availability certification, native routing proof, or playback validation. Original prototype availability/classification remains illustrative.
+Checked 2026-10-05 UTC. Twenty-four manually located official title/season URLs across the fixed Big 6 are retained independently of prototype availability. These are checked web identities, not entitlement certifications or native support inferred from URLs. The existing 17 Netflix/Disney+/Hulu/Prime destinations are unchanged from 1.5. Added only five Paramount+ and two Peacock entries for routing tests; broader catalog expansion is paused.
 
-| Fixture | Provider | Official title destination / source |
+| Fixture | Provider | Official destination |
 | --- | --- | --- |
 | moana | disney | [moana official page](https://www.disneyplus.com/browse/entity-e8896bfa-1052-41f7-ae2e-00255d77cf05) |
 | encanto | disney | [encanto official page](https://www.disneyplus.com/browse/entity-328b0ec7-6e50-4ead-aa7f-c8bb92e6f08a) |
@@ -21,16 +21,26 @@ Located manually on 2026-10-05 UTC using public web search and retrieval of offi
 | maisel | prime | [maisel official page](https://www.primevideo.com/detail/0N2ZNLA18SIYYKK3H9W469YBKQ) |
 | the-boys | prime | [the-boys official page](https://www.primevideo.com/detail/0S1FYJ3LY9KTL9C7WFFAGA9F6F) |
 | the-holiday | prime | [the-holiday official page](https://www.primevideo.com/detail/0O6ZAB6P2OCG8ZFBCOFPHX1HX3) |
+| spongebob | paramount | [spongebob official page](https://www.paramountplus.com/shows/spongebob-squarepants/) |
+| strange-new-worlds | paramount | [strange-new-worlds official page](https://www.paramountplus.com/shows/star-trek-strange-new-worlds/) |
+| mutant-mayhem | paramount | [mutant-mayhem official page](https://www.paramountplus.com/movies/video/zzvVWZ_qkLDj2LXltHmuZlUsX8BfdZ7U/) |
+| spongebob-movie | paramount | [spongebob-movie official page](https://www.paramountplus.com/movies/video/mM6oBlGnK1Tt1OzTyjM8vc_0QE1vui9k/) |
+| scream-vi | paramount | [scream-vi official page](https://www.paramountplus.com/movies/video/P1DZtBQ4PfwSJVpEzYDlcu83ulIk_ARL/) |
+| parks-and-rec | peacock | [parks-and-rec official page](https://www.peacocktv.com/watch-online/tv/parks-and-recreation/5883799404534408112/seasons/1) |
+| despicable-me-2 | peacock | [despicable-me-2 official page](https://www.peacocktv.com/watch-online/movies/despicable-me-2/41bacec9-efbf-3ae4-8358-5f4c1917c743) |
 
-## Observations and gaps
+## Observations
 
-- Disney pages identify the expected movies or series; Moana is the 2016 animated film, not the 2026 remake. Encanto is the film, not the sing-along or concert.
-- Hulu’s Only Murders bare URL redirected to Disney+ home during retrieval. The official `?tab=episodes` URL returned the named 2021 series; preserve that observed form. This variation makes device/account retesting especially necessary. Abbott and The Bear pages identified the series; Prey identified the 2022 movie.
-- Netflix pages identify the four named titles. These are `/title/` detail destinations, not `/watch/` playback promises.
-- Prime pages identify Fellowship’s theatrical film, The Holiday (2006), and Season 1 pages for Maisel and The Boys. Do not substitute extended editions or a randomly selected episode. Fellowship’s retrieved page offered rental/purchase or a Max channel trial rather than proving inclusion in base Prime; a title link never proves entitlement.
-- No usable Max title page was located from official public pages; its public `/movies` page returned “Site Unavailable” in this browser. Dune, Iron Giant, Conjuring, and Fellowship’s Max offer remain labeled homepage fallbacks. No private endpoints, scraped catalogs, guessed IDs, or paid API were used.
-- All iPhone, iPad and Apple TV exact native destinations remain **Untested**. User report from the earlier build confirms app/web home-menu opening only, without OS/app versions or per-provider outcomes.
+- Disney pages identify the intended movies/series. Moana is the 2016 animated film; Encanto is the film rather than a sing-along/concert.
+- Hulu's Only Murders bare URL redirected to Disney+ home in text retrieval. The observed `?tab=episodes` form identified the correct series and is preserved byte-for-byte. Other pages identify Abbott, The Bear, and Prey.
+- Netflix's four `/title/` destinations identify the expected titles, without promising autoplay.
+- Prime pages identify Fellowship's theatrical movie, The Holiday (2006), and Maisel/The Boys Season 1. Fellowship's page offered rent/buy or a channel trial in retrieval, so its sample offer does not prove base-Prime entitlement. Its URL remains useful for launch testing without purchases.
+- All five Paramount+ pages were opened in the cloud browser and showed the expected movie/series heading and year. Series pages showed episodes. The three `/movies/video/` links identify full movies, not similarly titled promotional `/shows/video/` clips. Some text retrievals redirected to an international landing; native/region testing remains required.
+- Peacock's Parks and Recreation URL is specifically Season 1; the official page displays episodes and title identity. Despicable Me 2's official page was retrieved and opened in the cloud browser with the expected title, 2013 year, and PG label. Signed-in playback/entitlement was not tested.
+- No Max mapping or offer is part of V1. No guessed opaque IDs, unofficial URL schemes, internal endpoints, scraping, or commercial API was used.
 
-## Minimal user test after this deployment
+## Current device evidence
 
-On iPhone/iPad, refresh Viewport and test Moana → Disney+, Abbott Elementary → Hulu, Our Planet → Netflix, and Maisel → Prime. Record app versus browser, expected title versus home, whether login/profile choice loses the title, OS/app version, and region. Do not buy or subscribe to test a link. Native tvOS remains the next physical-device probe. A web launch does not validate Apple TV support.
+The user explicitly reports native exact-title success for Netflix, Disney+, and Hulu; Prime resolves the correct web title but does not hand off natively. Paramount+ and Peacock are untested on real devices. These provider-level observations are the baseline in [compatibility](provider-compatibility.md); individual title/OS/app records still need to be added.
+
+Test SpongeBob SquarePants → Paramount+, Despicable Me 2 → Peacock, and Maisel → Prime first. Optional second routes: Mutant Mayhem and Parks and Recreation. The same checked HTTPS destination is the safe web fallback. No cloud-browser result is promoted to native confidence.

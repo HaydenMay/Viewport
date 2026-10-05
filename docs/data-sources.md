@@ -2,7 +2,7 @@
 
 ## What ships today
 
-`src/catalog.ts` is a hand-authored 20-entry fixture. Real title names/year/rating labels are representative sample facts entered manually and are not independently audited. Summaries are original short descriptions. Duration and rating labels are prototype metadata. US providers are simulated offers for UX testing and may not reflect actual current subscription availability. Content and art flags are illustrative annotations, not a comprehensive review of a film or its real advertisements.
+`src/catalog.ts` is a hand-authored 24-entry fixture, with checked destinations across the fixed Big 6. Real title names/year/rating labels are representative sample facts entered manually and are not independently audited. Summaries are original short descriptions. Duration and rating labels are prototype metadata. US providers are simulated offers for UX testing and may not reflect actual current subscription availability. Content and art flags are illustrative annotations, not a comprehensive review of a film or its real advertisements.
 
 The Mandalorian and The Boys include hypothetical disturbing-promotional-art flags specifically to prove that allowed titles can retain a neutral cover. Wednesday and other examples demonstrate content filtering. All rendered SVG scenes are original and deliberately non-graphic; no official promotional image is fetched. The app does not claim TMDB/JustWatch attribution because it does not use their data yet.
 
@@ -34,3 +34,7 @@ Commercial availability/deep-link vendors can be evaluated later against the act
 - [Apple universal-link handling](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app)
 
 These references establish integration constraints, not validated support by any individual streaming app.
+
+## Current milestone boundary
+
+Big 6 launch architecture and physical-device results take priority over further catalog growth. No metadata import, API purchase, or backend begins in this task. Existing metadata and simulated availability remain separate from the checked launch registry. A later TMDB/availability integration must preserve that separation and the exact-title admission rule.

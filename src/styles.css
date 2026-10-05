@@ -1596,3 +1596,29 @@ dialog::backdrop {
     max-width: 100%;
   }
 }
+
+/* Opt-in link diagnostics never appear in the ordinary catalog. */
+.launch-diagnostics {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #101b22;
+}
+.launch-diagnostics summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #a4dcb9;
+}
+.launch-diagnostics dl {
+  margin: 1rem 0;
+  font-size: 0.82rem;
+}
+.launch-diagnostics dt {
+  color: #92a5b3;
+  margin-top: 0.8rem;
+}
+.launch-diagnostics dd {
+  margin: 0.2rem 0 0;
+  overflow-wrap: anywhere;
+}

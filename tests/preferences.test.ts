@@ -82,3 +82,25 @@ test("storage uses versioned payload and stable key", () => {
     preferences: defaultPreferences(),
   });
 });
+
+test("Paramount+ selection survives reload without changing an existing household's services", () => {
+  const payload = (providerIds: string[]) =>
+    JSON.stringify({ version: 1, preferences: { providerIds } });
+  assert.deepEqual(parsePreferences(payload(["paramount"])).providerIds, [
+    "paramount",
+  ]);
+  assert.deepEqual(parsePreferences(payload(["disney", "prime"])).providerIds, [
+    "disney",
+    "prime",
+  ]);
+});
+
+test("Peacock survives saved preferences while retired Max is removed", () => {
+  const result = parsePreferences(
+    JSON.stringify({
+      version: 1,
+      preferences: { providerIds: ["max", "peacock", "disney"] },
+    }),
+  );
+  assert.deepEqual(result.providerIds, ["disney", "peacock"]);
+});

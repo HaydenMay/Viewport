@@ -1,47 +1,46 @@
 # Architecture and product decisions
 
-## Why this stack
+Vite, strict TypeScript, native DOM/CSS, and native dialogs keep the prototype lightweight and compatible with GitHub Pages. No framework, router, backend, or state library was added for the launch integration. Existing streaming-style layout and household controls are retained.
 
-Vite, strict TypeScript, semantic HTML, CSS, and native dialogs provide a lightweight static prototype for GitHub Pages. React or Angular could support a larger application, but this single catalog does not need a component framework, router, or state library. The filtering domain stays reusable if a framework is added later.
+## Boundaries
 
-## Source map
-
-| File | Responsibility |
+| Source | Responsibility |
 | --- | --- |
-| `src/domain.ts` | Normalized title, preference, offer, and adapter contracts |
-| `src/catalog.ts` | Twenty fixture entries; catalog/availability implementations |
-| `src/filter.ts` | Pure content, maturity, provider, and search filtering; independent art decision |
-| `src/preferences.ts` | Safe defaults, versioned parsing, and failure-aware browser persistence |
-| `src/providers.ts` | Provider registry and title-page launch adapter with explicit homepage fallback |
-| `src/ui.ts` | Escaped rendering helpers for cards, features, switches, and icons |
-| `src/main.ts` | Interaction orchestration and small in-memory state |
-| `src/styles.css` | Cinema theme, responsive grid, dialogs, touch and focus states |
-| `scripts/create-artwork.mjs` | Reusable original SVG illustration source |
-| `public/artwork` | Runtime illustration exports, one per title |
-| `tests` | Filtering, art independence, persistence validation, fixtures, and launch semantics |
+| `domain.ts` | Title, preference, offer, launch capability/platform, and adapter contracts |
+| `catalog.ts` | Prototype metadata and simulated subscription availability, independently of launch paths |
+| `title-links.ts` | Checked official title destinations and their source/date |
+| `providers.ts` | The fixed Big 6 registry, URL validation/ID extraction, platform evidence, navigation, and fallback policy |
+| `discovery.ts` | Joins independent catalog/availability/launch adapters to admit only title-linked offers |
+| `filter.ts` | Pure household, provider, maturity, and search rules; independent artwork decision |
+| `preferences.ts` | Validated local preference persistence and retired-provider migration |
+| `ui.ts` | Escaped generic rendering, including opt-in launch diagnostics |
+| `main.ts` | Small state/interaction orchestration; no provider-specific launch branches |
+| `scripts/create-artwork.mjs` | Reusable original SVG sources and runtime exports |
 
-The flow is `CatalogSource.list → preferences + transient search/provider scope → filterTitles → feature/grid/details`. `AvailabilitySource.offersFor → subscribed offers → ProviderLauncher.resolve → external provider action` is separate. Future adapters can replace data/launch behavior without rewriting filtering or discovery rendering.
+`CatalogSource.list()` answers what titles exist. `AvailabilitySource.offersFor()` answers where a title is offered, with region/access/provenance. `ProviderLauncher.resolve(offer, platform)` separately answers the best known launch plan. A commercial availability source or licensed URL source can replace the fixtures without scattering provider behavior through UI components.
 
-## Household rules
+`loadLaunchableCatalog` projects only exact-title-resolved offers into discovery. It does not alter raw metadata or availability, nor claim that the checked URL proves entitlement. All surfaces use the projected list and the same content predicate. Details independently gate offers again and intersect with the household's selected services. A link on one provider never makes another provider's offer launchable. Missing-link titles cannot appear in search or featured content; home-only fallbacks never become Watch buttons.
 
-- Subscriptions identify catalogs to include; the service tabs are a separate temporary browse scope.
-- Hide Horror excludes both horror and scary-theme annotations; Hide Halloween / seasonal excludes Halloween and other annotated holidays, including Christmas. Neither depends on a marketing season or today's date.
-- Rating bands combine film and television labels for the demo: G/TV-G; PG/TV-PG; PG-13/TV-14; R/TV-MA. This is a UI convenience, not an assertion that film and TV rating standards are identical. Production must normalize by region and retain original labels.
-- Default hide flags are on, while the default maturity ceiling includes all rated titles. Households choose their own restrictions.
-- Unknown maturity is hidden unless explicitly included. Production needs an explicit unknown/review-needed policy for content annotations too; empty demo flags are not a safety guarantee.
-- Promotional-art decisions operate on the individual asset, not just a title's genre. Unknown/disturbing art can be replaced. Seasonal promotional art is replaced when seasonal hiding is enabled. The title remains unless a content rule independently excludes it.
-- All surfaces use the same predicate. Filtering out a currently open title also closes its details. Search does not bypass preferences.
+## Launch plans
 
-## State and accessibility
+A plan carries exact URL, safe fallback, expected capability (`nativeExact`, `webExact`, `providerHome`, `unsupported`), evidence, provider content ID, navigation, and physical-verification requirement. The resolver validates HTTPS, provider origin, credentials, and recognized title-path shape, then preserves the observed URL verbatim. Hulu's significant query string is retained. Unknown integrations return unsupported; malformed/untrusted mappings fall back to the known provider homepage and are excluded from discovery.
 
-Only preferences persist, under `viewport.preferences.v1`, with `{ version: 1, preferences }`. Invalid fields fall back to defaults; unknown provider/topic values are discarded. Persistence failure produces a visible message while allowing use during the visit. Local settings are not tamper-resistant parental controls and have no PIN.
+The platform argument affects expected capability, not whether the app actually opened. Current iOS native expectations for Netflix/Disney+/Hulu are based on the user's report. The other three are web-exact candidates; no native confidence is inferred. Individual title/device records remain pending. See [compatibility](provider-compatibility.md).
 
-Use semantic buttons, label-associated inputs, switch roles, accessible live result counts, visible focus, a skip link, reduced-motion support, and native dialog focus/escape behavior. Provider links identify their website destination and new-tab behavior. A later tvOS interface must replace touch/keyboard interaction assumptions with focus-engine navigation and remote testing.
+All current primary URLs are safe HTTPS title destinations that also serve as web fallbacks. There is no custom-scheme navigation, hidden redirect, install detection, or timeout heuristic that might replace a successful native handoff with an erroneous fallback. Netflix/Disney+/Hulu preserve new-tab navigation. Prime/Paramount+/Peacock use same-tab direct links from the centralized policy. Prime's change is an experiment, not a claimed native fix.
 
-## Intentional boundaries
+## Diagnostics and normal UX
 
-The prototype proves discovery and filtering. It does not prove native deep links, provider entitlement, up-to-date catalogs, automated classification, official promotional-art reuse, or parental enforcement. Provider names are destination labels; Viewport has no affiliation. Native development starts with the launch probe, before investment in a full Apple TV catalog UI.
+Only `?debug=links` renders diagnostic details. They show title/provider, URL, provider content ID, expected capability for iOS (or `&platform=web`), fallback, evidence, navigation, and verification notes. No TMDB ID is fabricated. Normal browsing has no developer fields; no diagnostic result is stored or sent anywhere. The UI consumes generic launch-plan properties rather than branching on provider IDs.
 
-## Milestone 1.5: title destinations
+## Household rules and persistence
 
-`src/title-links.ts` keeps manually observed official destinations separate from illustrative availability. `PrototypeLauncher` resolves by both title and provider, so a multi-provider title cannot inherit another provider’s URL. `LaunchTarget.scope` distinguishes `provider-title-page` from `provider-homepage`; neither grants native verification. The details interface describes the actual destination for each action. No guessed schemes, timers, app-detection tricks, or catalog crawling are used. Missing Max links remain visible fallbacks. Future availability sources can provide approved destinations through the same adapter without changing filtering.
+Subscriptions determine included offers; service tabs are transient browse scope. Horror includes scary-theme annotations. Seasonal hiding covers annotated Halloween and other holidays. Maturity bands combine film/TV labels as a prototype convenience, not equivalent standards or a content review. Unknown maturity is excluded by default. Violence/sexual/language preferences compose with these controls.
+
+Promotional-art risk is separate from title acceptance: neutral local artwork can replace unreviewed/disturbing art without hiding an allowed title. All images are original local scenes, not official posters. Sample tags and subscription offers remain illustrative and cannot certify safety or entitlement.
+
+Preferences use `viewport.preferences.v1`; old service choices are preserved, Max is discarded as retired, and Paramount+/Peacock are recognized when selected. Stored households are not silently enrolled in new services. Invalid fields recover safely; blocked storage produces a visible message and leaves the app usable. Local controls have no PIN or provider-profile enforcement.
+
+Semantic controls, live result counts, visible focus, reduced-motion support, and native dialog Escape/focus behavior are preserved. Existing working routes are covered by literal URL/navigation regression checks. The Pages workflow still builds/tests/deploys `main`.
+
+Accounts, payments, API purchases, production refresh backends, automated classification, broad catalog expansion, and native tvOS work are outside this milestone. Await the physical-device outcomes before the next major feature.

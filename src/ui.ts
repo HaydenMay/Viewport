@@ -1,4 +1,10 @@
-import type { Preferences, Title } from "./domain.ts";
+import type {
+  LaunchPlatform,
+  LaunchTarget,
+  Offer,
+  Preferences,
+  Title,
+} from "./domain.ts";
 import { shouldReplaceArtwork } from "./filter.ts";
 import { providerById } from "./providers.ts";
 
@@ -10,6 +16,39 @@ export function escapeHtml(value: string): string {
         character
       ]!,
   );
+}
+
+// Rendered only when explicitly requested with ?debug=links. The launch resolver
+// supplies every provider-specific decision; normal cards/details stay unchanged.
+export function launchDiagnostics(
+  title: Title,
+  offer: Offer,
+  target: LaunchTarget,
+  platform: LaunchPlatform,
+): string {
+  const fields = [
+    ["Title", `${title.name} (${title.year})`],
+    ["Provider", providerById(offer.providerId).name],
+    [
+      "Platform expectation",
+      platform === "ios" ? "iOS / iPadOS candidate" : "Web",
+    ],
+    ["Launch URL", target.url ?? "None"],
+    ["Provider content ID", target.providerContentId ?? "Not mapped"],
+    ["TMDB ID", "Not imported; prototype fixture"],
+    ["Expected capability", target.expectedCapability],
+    ["Evidence", target.evidence],
+    ["Web fallback", target.fallbackUrl ?? "None"],
+    ["Navigation", target.navigation],
+    [
+      "Physical verification needed",
+      target.requiresDeviceVerification
+        ? "Yes — individual-title/device record pending"
+        : "No",
+    ],
+    ["Notes", target.explanation],
+  ];
+  return `<details class="launch-diagnostics"><summary>Link diagnostics · ${escapeHtml(providerById(offer.providerId).name)}</summary><dl>${fields.map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd>`).join("")}</dl>${target.fallbackUrl ? `<a class="text-button" href="${escapeHtml(target.fallbackUrl)}" target="_blank" rel="noopener noreferrer">Open fallback provider page</a>` : ""}</details>`;
 }
 export const icon = (
   name:

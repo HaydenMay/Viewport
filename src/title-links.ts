@@ -80,6 +80,41 @@ export const TITLE_PAGE_LINKS: TitlePageLink[] = [
     "prime",
     "https://www.primevideo.com/detail/0O6ZAB6P2OCG8ZFBCOFPHX1HX3",
   ],
+  [
+    "spongebob",
+    "paramount",
+    "https://www.paramountplus.com/shows/spongebob-squarepants/",
+  ],
+  [
+    "strange-new-worlds",
+    "paramount",
+    "https://www.paramountplus.com/shows/star-trek-strange-new-worlds/",
+  ],
+  [
+    "mutant-mayhem",
+    "paramount",
+    "https://www.paramountplus.com/movies/video/zzvVWZ_qkLDj2LXltHmuZlUsX8BfdZ7U/",
+  ],
+  [
+    "spongebob-movie",
+    "paramount",
+    "https://www.paramountplus.com/movies/video/mM6oBlGnK1Tt1OzTyjM8vc_0QE1vui9k/",
+  ],
+  [
+    "scream-vi",
+    "paramount",
+    "https://www.paramountplus.com/movies/video/P1DZtBQ4PfwSJVpEzYDlcu83ulIk_ARL/",
+  ],
+  [
+    "parks-and-rec",
+    "peacock",
+    "https://www.peacocktv.com/watch-online/tv/parks-and-recreation/5883799404534408112/seasons/1",
+  ],
+  [
+    "despicable-me-2",
+    "peacock",
+    "https://www.peacocktv.com/watch-online/movies/despicable-me-2/41bacec9-efbf-3ae4-8358-5f4c1917c743",
+  ],
 ].map(([titleId, providerId, url]) => ({
   titleId,
   providerId: providerId as ProviderId,

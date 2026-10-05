@@ -1,4 +1,10 @@
-export type ProviderId = "disney" | "hulu" | "netflix" | "prime" | "max";
+export type ProviderId =
+  | "disney"
+  | "hulu"
+  | "netflix"
+  | "prime"
+  | "peacock"
+  | "paramount";
 export type AgeLevel = 0 | 1 | 2 | 3;
 export type ContentTopic =
   | "horror"
@@ -46,12 +52,24 @@ export interface Offer {
 export interface AvailabilitySource {
   offersFor(titleId: string): Promise<Offer[]>;
 }
+export type LaunchCapability =
+  | "nativeExact"
+  | "webExact"
+  | "providerHome"
+  | "unsupported";
+export type LaunchPlatform = "web" | "ios";
 export interface LaunchTarget {
-  url: string;
-  scope: "provider-homepage" | "provider-title-page";
-  nativeTitleVerified: false;
+  url: string | null;
+  fallbackUrl: string | null;
+  expectedCapability: LaunchCapability;
+  fallbackCapability: "webExact" | "providerHome" | "unsupported";
+  exactTitleResolved: boolean;
+  providerContentId: string | null;
+  navigation: "new-tab" | "same-tab";
+  evidence: "user-reported-provider" | "official-web-page" | "none";
+  requiresDeviceVerification: boolean;
   explanation: string;
 }
 export interface ProviderLauncher {
-  resolve(offer: Offer): LaunchTarget;
+  resolve(offer: Offer, platform?: LaunchPlatform): LaunchTarget;
 }

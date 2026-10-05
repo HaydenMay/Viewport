@@ -78,9 +78,9 @@ test("seasonal content can be allowed independently from horror", () => {
   );
 });
 test("subscription selection uses any matching offer and empty selection yields none", () => {
-  const both = fixture({ providerIds: ["hulu", "max"] });
+  const both = fixture({ providerIds: ["hulu", "peacock"] });
   assert.equal(
-    filterTitles([both], { ...defaultPreferences(), providerIds: ["max"] })
+    filterTitles([both], { ...defaultPreferences(), providerIds: ["peacock"] })
       .length,
     1,
   );

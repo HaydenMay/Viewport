@@ -2,55 +2,54 @@
 
 A unified streaming discovery prototype: choose your subscriptions, browse one catalog, and control what surfaces in your household. Viewport is a working name and is not a kids-only app.
 
-## Try the prototype
-
 **Live:** [Open Viewport](https://haydenmay.github.io/Viewport/) · [Public repository](https://github.com/HaydenMay/Viewport)
 
-Milestone **1.5** adds title-specific provider links.
+## Milestone 1.6: Big 6 launch integration
 
-Choose services in **Preferences**, search across them, or scope the catalog to one provider. **Hide Horror**, **Hide Halloween / seasonal**, and the maturity limit apply immediately to both the catalog and the featured title. Preferences also offer violence, sexual-content, and strong-language exclusions. **Use neutral artwork** replaces a promotional image independently of whether the title itself is acceptable. Preferences persist on this browser only.
+V1 supports exactly **Netflix, Disney+, Hulu, Prime Video, Paramount+, and Peacock**. Max is retired from V1. The existing discovery UI, filters, and working Netflix/Disney+/Hulu URLs are preserved. Select Paramount+ and Peacock in Preferences; saved households retain their other service choices and retired Max selections are discarded.
 
-This milestone includes 20 representative real movie/show names across Disney+, Hulu, Netflix, Prime Video, and Max. Metadata is manually entered sample data, with original summaries and original SVG illustrations. **Availability, content annotations, and promotional-art flags are illustrative, not verified current availability or comprehensive content advice.** No service is scraped, no API key is needed, and no official posters are included.
+The user confirms native exact-title opening for Netflix, Disney+, and Hulu on iOS. Prime currently opens the correct web title. Paramount+ and Peacock have researched, checked HTTPS title paths ready for physical-device testing. Native status is never inferred from a public page or an open callback. See the [compatibility matrix](docs/provider-compatibility.md).
 
-**Watch on [provider] uses an official title page for 17 sample destinations.** The button labels distinguish title pages from homepage fallbacks. Max’s four illustrative offers remain homepage fallbacks because no usable official title destination was confirmed. Native exact-title app launching on iOS, iPadOS, and tvOS remains unverified. Sign-in, region, and subscription restrictions may still intervene. This prototype does not alter provider home screens, advertisements, profiles, or recommendations after launching them.
+Provider routing and support evidence live in one integration registry. Plans distinguish `nativeExact`, `webExact`, `providerHome`, and `unsupported`, with explicit safe fallbacks. Direct HTTPS title links allow the OS/provider to choose native app or website without risky undocumented custom schemes. Prime uses the same checked title URL with a direct same-tab action as a handoff experiment; native improvement still needs a real-device result. Netflix, Disney+, and Hulu retain their existing new-tab behavior.
 
-## Develop
+**Every visible title must have a checked exact title destination on a selected service.** Home, search, featured content, provider scopes, and Watch actions all apply that rule. Provider-home/unsupported plans remain available to diagnostics and future adapters, but never become exact-title Watch buttons.
+
+## Try it
+
+Choose services in **Preferences**, search across them, or scope browsing to one provider. **Hide Horror**, **Hide Halloween / seasonal**, and maturity controls apply immediately. Additional preferences hide violence, sexual content, and strong language. Neutral artwork can replace an image while retaining an acceptable title. Preferences persist on this browser only and do not change provider recommendations after you leave Viewport.
+
+There are 24 linked fixtures: the 17 existing Big 6 examples plus five Paramount+ and two Peacock test entries. Broad catalog expansion is paused. Names, years, durations, and ratings are manually entered prototype metadata. Summaries and SVG scenes are original. **Subscription availability, content annotations, and promotional-art flags are illustrative, not current availability guarantees or comprehensive content guidance.** No service is scraped and no official posters or API keys are used.
+
+## Link diagnostics and device testing
+
+Open the deployed site with **`?debug=links`**, then open title details and expand **Link diagnostics**. It shows provider/title, exact launch URL, provider content ID, expected iOS capability, web fallback, evidence, navigation policy, and remaining device verification. TMDB IDs are explicitly not imported. Add `&platform=web` to inspect the web expectation. Normal browsing never exposes these fields; no diagnostic data is transmitted or stored.
+
+On iPhone/iPad Safari, enable Paramount+, Peacock, and Prime in Preferences. Test **SpongeBob SquarePants**, **Despicable Me 2**, and **The Marvelous Mrs. Maisel**. Report app versus browser and exact title versus Home, plus OS/provider app versions if available. A second series/movie check can use Mutant Mayhem and Parks and Recreation. See [the short checklist and research](docs/provider-launch-research.md).
+
+## Develop and deploy
 
 Use Node **22.18+** (or Node 24).
 
 ```sh
 npm ci
 npm run dev
+npm run verify   # behavior tests, strict TypeScript, Vite production build
+npm run preview
+npm run artwork  # regenerate original SVG exports from preserved source
 ```
 
-```sh
-npm test          # Node behavior tests
-npm run build    # strict TypeScript check + Vite production build
-npm run verify   # both
-npm run preview  # serve the built output locally
-npm run artwork  # regenerate original SVG illustrations from source
-```
+The optional `scripts/browser-qa.mjs` verifies the production build at the `/Viewport/` repository subpath with Playwright/Chromium. An external module can be supplied via `VIEWPORT_PLAYWRIGHT_MODULE`; Playwright is not a product dependency.
 
-Vite uses relative asset paths so the build works at the GitHub Pages repository subpath `/Viewport/`, without hard-coded owner URLs. The app has one route; native dialogs keep navigation compatible with static hosting. Search and service-browse scope are transient. Versioned preferences are validated before loading.
+Relative assets and native dialogs work on GitHub Pages without a client router. [.github/workflows/pages.yml](.github/workflows/pages.yml) validates and deploys pushes to `main`; Pages uses GitHub Actions as its source. Local and deployed evidence are in [verification](docs/verification.md).
 
-## GitHub Pages
+## Decisions and boundaries
 
-The included [.github/workflows/pages.yml](.github/workflows/pages.yml) installs locked dependencies, runs tests/type checking/production build, uploads `dist`, and deploys on pushes to `main`. Pull requests run validation without deployment.
+- [Architecture](docs/architecture.md)
+- [Provider compatibility](docs/provider-compatibility.md)
+- [Launch research and physical-device checklist](docs/provider-launch-research.md)
+- [Title URL evidence](docs/title-link-evidence.md)
+- [Data provenance and eventual TMDB architecture](docs/data-sources.md)
+- [Catalog admission rules](docs/catalog-curation.md)
+- [Deferred native validation](docs/deep-link-validation.md)
 
-1. Create a **public** repository named **Viewport** under the connected account, using `main` as its default branch.
-2. Push these sources, including `package-lock.json` and `.github/workflows/pages.yml`.
-3. Set **Settings → Pages → Build and deployment → Source → GitHub Actions**.
-4. Confirm the workflow's `build` and `deploy` jobs pass, then use its emitted Pages URL.
-5. On the deployed site, repeat search, service selection, immediate hide/show, details, reload persistence, and title-page and homepage-fallback link checks. Check the browser console and asset responses. A successful local build is not proof of deployed-site correctness.
-
-Publication status and actual validation evidence are in [docs/verification.md](docs/verification.md). Title URL provenance and limitations are in [docs/title-link-evidence.md](docs/title-link-evidence.md).
-
-## Architecture and next milestone
-
-- [Architecture and product decisions](docs/architecture.md)
-- [Fixture provenance and future TMDB/availability architecture](docs/data-sources.md)
-- [Disney+, Hulu, Netflix, Prime Video, and Max deep-link validation matrix](docs/deep-link-validation.md)
-- [Smallest native Apple launch probe](docs/native-probe.md)
-- [Implementation design](docs/superpowers/specs/2026-10-05-viewport-design.md)
-
-There are no accounts, payments, production backend, AI classifiers, telemetry, or commercial API subscriptions. No open-source license is selected by this prototype; third-party tools retain their own licenses. Original artwork sources and exports are preserved for future work.
+No accounts, payments, production backend, AI classification, commercial API subscriptions, or native tvOS development are included. Do not begin another major feature until the current device results are returned. No open-source license has been selected; third-party tools retain their licenses. Reusable source and original artwork exports are preserved.

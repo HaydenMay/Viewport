@@ -14,3 +14,11 @@ Outstanding external operation: GitHub connector lacks repository-creation and P
 ## Milestone 1.5 — 2026-10-05
 
 User tested the initial build and reported provider app/web home-menu opening. Added 17 manually observed official title/season destinations in a separate launch registry, with provider-specific resolution and four explicit Max fallbacks. Native routing remains untested. Added behavior regressions (homepage-only red → title destinations green), destination labels, evidence log, and an updated Apple test matrix. Verification: 24 tests, TypeScript/build, production browser QA, independent review, successful GitHub deployment, and live interaction checks. See verification.md and title-link-evidence.md.
+
+## Milestone 1.6 — fixed Big 6 launch architecture
+
+The user's refined instruction fixes V1 to Netflix, Disney+, Hulu, Prime, Paramount+, and Peacock, removes Max, and pauses broad catalog expansion/native tvOS development. Preserved all 17 existing Big 6 fixture URLs and new-tab behavior for the three natively working providers. Added five Paramount+ and two Peacock routing examples only.
+
+Centralized URL validation, content-ID extraction, platform support evidence, expected capability, navigation, and fallback policy in the provider registry/resolver. Discovery and availability remain separate adapters; title-linked admission strips unsupported offers before content/search filtering. Normal UI consumes generic plan fields. Opt-in `?debug=links` shows test diagnostics without telemetry or persistence. Prime retains its checked title URL, with same-tab direct navigation as an unverified handoff experiment.
+
+Provider-launch tests were observed failing before the new model, then passed after implementation. Device reports explicitly establish Netflix/Disney+/Hulu native success and Prime web-exact status; new providers remain untested. The compatibility/research documents distinguish user observation, official web evidence, inference, and pending native tests. Stop after deployment and await the user's physical results.

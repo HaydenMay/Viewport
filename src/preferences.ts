@@ -3,7 +3,7 @@ import type { Preferences } from "./domain.ts";
 export const PREFERENCE_KEY = "viewport.preferences.v1";
 export function defaultPreferences(): Preferences {
   return {
-    providerIds: ["disney", "hulu", "netflix", "prime", "max"],
+    providerIds: ["disney", "hulu", "netflix", "prime", "peacock", "paramount"],
     hideHorror: true,
     hideSeasonal: true,
     hideDisturbingArtwork: true,
@@ -12,7 +12,14 @@ export function defaultPreferences(): Preferences {
     blockedTopics: [],
   };
 }
-const providerIds = ["disney", "hulu", "netflix", "prime", "max"] as const;
+const providerIds = [
+  "disney",
+  "hulu",
+  "netflix",
+  "prime",
+  "peacock",
+  "paramount",
+] as const;
 const topics = ["horror", "scary", "violence", "sexual", "language"] as const;
 
 export function parsePreferences(raw: string | null): Preferences {

@@ -69,7 +69,7 @@ const waitCount = async (count) => {
 
 try {
   await page.goto(url, { waitUntil: "load" });
-  await waitCount(14);
+  await waitCount(17);
   await page.screenshot({ path: `${output}/viewport-preview.png` });
   await page.setViewportSize({ width: 820, height: 1180 });
   assert.equal(
@@ -81,13 +81,52 @@ try {
   );
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.locator('.quick-filters [data-preference="hideHorror"]').uncheck();
-  await waitCount(18);
+  await waitCount(22);
   await page
     .locator('.quick-filters [data-preference="hideSeasonal"]')
     .uncheck();
-  await waitCount(20);
+  await waitCount(24);
   await page.reload({ waitUntil: "load" });
-  await waitCount(20);
+  await waitCount(24);
+  const ids = await page
+    .locator(".title-card")
+    .evaluateAll((cards) => cards.map((card) => card.dataset.title));
+  assert.equal(ids.length, 24);
+  for (const id of ids) {
+    await page.locator(`.title-card[data-title="${id}"]`).click();
+    await page.locator("#details-dialog[open]").waitFor();
+    const destinations = await page
+      .locator(".watch-link")
+      .evaluateAll((links) => links.map((link) => new URL(link.href).pathname));
+    assert.ok(
+      destinations.length > 0 && destinations.every((path) => path !== "/"),
+      `${id}: needs a title destination`,
+    );
+    assert.equal(await page.locator(".fallback-note").count(), 0);
+    const navigation = await page
+      .locator(".watch-link")
+      .evaluateAll((links) =>
+        links.map((link) => ({ url: link.href, target: link.target })),
+      );
+    for (const link of navigation) {
+      const host = new URL(link.url).hostname;
+      assert.equal(
+        link.target,
+        ["www.netflix.com", "www.disneyplus.com", "www.hulu.com"].includes(host)
+          ? "_blank"
+          : "_self",
+      );
+    }
+    assert.equal(
+      await page.locator(".launch-diagnostics").count(),
+      0,
+      "diagnostics must be opt-in",
+    );
+    await page.keyboard.press("Escape");
+  }
+  results.push(
+    "All 24 browsable titles render title-specific Watch actions without homepage fallbacks.",
+  );
   assert.equal(
     await page
       .locator('.quick-filters [data-preference="hideHorror"]')
@@ -108,19 +147,20 @@ try {
   );
   await page.locator("#search").fill("");
   await page.locator('.quick-filters [data-preference="hideSeasonal"]').check();
-  await waitCount(14);
+  await waitCount(17);
   await page.locator(".quick-filters [data-maturity]").selectOption("1");
-  await waitCount(7);
+  await waitCount(11);
   await page.locator(".quick-filters [data-maturity]").selectOption("3");
-  await waitCount(14);
+  await waitCount(17);
   results.push(
-    "Search never bypasses content rules; maturity boundary gives seven PG-or-lower fixtures.",
+    "Search never bypasses content rules; maturity boundary gives eleven PG-or-lower fixtures.",
   );
 
-  await page.locator('[data-provider="max"]').click();
-  await waitCount(3);
+  assert.equal(await page.locator('[data-provider="max"]').count(), 0);
+  await page.locator('[data-provider="peacock"]').click();
+  await waitCount(2);
   await page.locator('[data-provider="all"]').click();
-  await waitCount(14);
+  await waitCount(17);
   await page.locator('.title-card[data-title="mandalorian"]').click();
   await page.locator("#details-dialog[open]").waitFor();
   assert.equal(await page.locator("#details-dialog .cover-neutral").count(), 1);
@@ -130,7 +170,7 @@ try {
   );
   assert.match(
     await page.locator(".launch-note").innerText(),
-    /exact-title.*not been tested/is,
+    /title.*available in your browser/is,
   );
   assert.match(
     await page.locator("#details-dialog .watch-link").innerText(),
@@ -163,7 +203,14 @@ try {
   );
   await page.locator("[data-open-preferences]").first().click();
   await page.locator('[data-preference="hideDisturbingArtwork"]').check();
-  for (const id of ["disney", "hulu", "netflix", "prime", "max"])
+  for (const id of [
+    "disney",
+    "hulu",
+    "netflix",
+    "prime",
+    "paramount",
+    "peacock",
+  ])
     await page.locator(`[data-service="${id}"]`).uncheck();
   await page.locator('[data-close="preferences-dialog"]').last().click();
   await waitCount(0);
@@ -172,24 +219,48 @@ try {
     /Which services/,
   );
   await page.locator("[data-open-preferences]").first().click();
-  await page.locator('[data-service="max"]').check();
+  await page.locator('[data-service="prime"]').check();
   await page.locator('[data-close="preferences-dialog"]').last().click();
-  await waitCount(3);
+  await page.locator("#search").fill("Fellowship");
+  await waitCount(1);
   await page.locator('.title-card[data-title="fellowship"]').click();
   await page.locator("#details-dialog[open]").waitFor();
   assert.equal(await page.locator(".watch-link").count(), 1);
   assert.equal(
     await page.locator(".watch-link").getAttribute("href"),
-    "https://www.hbomax.com/",
+    "https://www.primevideo.com/detail/0N0CRBLY1S5GDA4EVTQ34LF5GN",
   );
   await page.keyboard.press("Escape");
   results.push(
-    "Artwork choice preserves title; zero subscriptions has an empty state; Watch on offers include only subscribed services.",
+    "Prime-only browsing resolves Fellowship and keeps a direct same-tab HTTPS destination.",
+  );
+
+  await page.locator("#search").fill("");
+  await page.locator("[data-open-preferences]").first().click();
+  await page.locator('[data-service="prime"]').uncheck();
+  await page.locator('[data-service="paramount"]').check();
+  await page.locator('[data-close="preferences-dialog"]').last().click();
+  await waitCount(3);
+  await page.reload({ waitUntil: "load" });
+  await waitCount(3);
+  await page.locator('[data-provider="paramount"]').click();
+  await waitCount(3);
+  await page.locator('.title-card[data-title="spongebob"]').click();
+  await page.locator("#details-dialog[open]").waitFor();
+  assert.equal(
+    await page.locator(".watch-link").getAttribute("href"),
+    "https://www.paramountplus.com/shows/spongebob-squarepants/",
+  );
+  await page.keyboard.press("Escape");
+  await page.locator('.quick-filters [data-preference="hideHorror"]').uncheck();
+  await waitCount(5);
+  results.push(
+    "Paramount+ selection persists, three default titles expand to five with horror allowed, and the series action targets its own page.",
   );
 
   await page.evaluate(() => localStorage.clear());
   await page.reload({ waitUntil: "load" });
-  await waitCount(14);
+  await waitCount(17);
   for (const [name, width, height] of [
     ["desktop", 1440, 1000],
     ["ipad-landscape", 1180, 820],
@@ -262,6 +333,38 @@ try {
   );
   results.push("200% base text size: no horizontal page overflow.");
 
+  const debug = await browser.newPage({
+    viewport: { width: 390, height: 844 },
+  });
+  await debug.goto(url + "?debug=links", { waitUntil: "load" });
+  await debug.locator('.title-card[data-title="parks-and-rec"]').click();
+  await debug.locator("#details-dialog[open]").waitFor();
+  await debug.locator(".launch-diagnostics summary").click();
+  const report = await debug.locator(".launch-diagnostics").innerText();
+  assert.match(report, /5883799404534408112/);
+  assert.match(report, /webExact/);
+  assert.match(report, /Physical verification needed/);
+  assert.match(report, /Not imported; prototype fixture/);
+  assert.equal(
+    await debug.locator(".launch-diagnostics a").getAttribute("href"),
+    "https://www.peacocktv.com/watch-online/tv/parks-and-recreation/5883799404534408112/seasons/1",
+  );
+  assert.equal(
+    await debug.evaluate(() => {
+      const modal = document.querySelector("#details-dialog");
+      return modal.scrollWidth > modal.clientWidth;
+    }),
+    false,
+  );
+  await debug.screenshot({
+    path: `${output}/link-diagnostics-mobile.png`,
+    fullPage: true,
+  });
+  await debug.close();
+  results.push(
+    "Opt-in Peacock diagnostics show exact URL, content ID, capability, fallback, and device-verification state without mobile overflow.",
+  );
+
   const blocked = await browser.newPage();
   await blocked.addInitScript(() => {
     Object.defineProperty(window, "localStorage", {
@@ -276,7 +379,7 @@ try {
     await blocked.locator("#save-status").innerText(),
     /could not save/,
   );
-  assert.equal(await blocked.locator(".title-card").count(), 14);
+  assert.equal(await blocked.locator(".title-card").count(), 17);
   await blocked.close();
   results.push(
     "Blocked browser storage remains usable and explains that saving failed.",
