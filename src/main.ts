@@ -61,7 +61,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
     <button class="preferences-button" data-open-preferences aria-label="Preferences">${icon("sliders")}<span>Preferences</span></button></div>
   </div></header>
   <main class="main-shell">
-    <div class="catalog-heading"><div><span class="eyebrow subtle">YOUR STREAMING, TOGETHER</span><h1>Your catalog</h1><p id="service-summary">Loading your catalog…</p></div><button class="prototype-badge" data-open-about><span></span>Prototype 1.6</button></div>
+    <div class="catalog-heading"><div><span class="eyebrow subtle">YOUR STREAMING, TOGETHER</span><h1>Your catalog</h1><p id="service-summary">Loading your catalog…</p></div><button class="prototype-badge" data-open-about><span></span>Prototype 1.7</button></div>
     <div class="services-bar"><div id="provider-tabs" class="provider-tabs" role="group" aria-label="Browse by streaming service"></div><button class="text-button manage-services" data-open-preferences>Manage services ${icon("arrow")}</button></div>
     <section class="quick-filters" aria-label="Household content controls">
       <div class="filter-intro">${icon("shield")}<span>Your house.<br /><strong>Your rules.</strong></span></div>

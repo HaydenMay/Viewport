@@ -47,8 +47,15 @@ export function launchDiagnostics(
         : "No",
     ],
     ["Notes", target.explanation],
+    ...(target.appCandidate ? [
+      ["App candidate URL", target.appCandidate.url],
+      ["Candidate evidence", target.appCandidate.evidence],
+      ["Candidate verification", "Pending physical-device test; native success is not claimed"],
+      ["Candidate notes", target.appCandidate.explanation],
+    ] : []),
   ];
-  return `<details class="launch-diagnostics"><summary>Link diagnostics · ${escapeHtml(providerById(offer.providerId).name)}</summary><dl>${fields.map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd>`).join("")}</dl>${target.fallbackUrl ? `<a class="text-button" href="${escapeHtml(target.fallbackUrl)}" target="_blank" rel="noopener noreferrer">Open fallback provider page</a>` : ""}</details>`;
+  const probe = target.appCandidate ? `<p>Experimental app link. If it fails, return here and use the working Watch action.</p><a class="button-secondary" data-app-probe href="${escapeHtml(target.appCandidate.url)}" target="_self">Try app link · ${escapeHtml(providerById(offer.providerId).name)}</a>` : "";
+  return `<details class="launch-diagnostics"><summary>Link diagnostics · ${escapeHtml(providerById(offer.providerId).name)}</summary>${probe}<dl>${fields.map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd>`).join("")}</dl>${target.fallbackUrl ? `<a class="text-button" data-web-fallback href="${escapeHtml(target.fallbackUrl)}" target="_blank" rel="noopener noreferrer">Open fallback provider page</a>` : ""}</details>`;
 }
 export const icon = (
   name:

@@ -20,6 +20,7 @@ export interface ProviderIntegration {
   iosCapability: LaunchCapability;
   iosEvidence: "user-reported" | "pending";
   iosNotes: string;
+  appCandidatePath?: { from: string; to: string };
 }
 
 // Provider facts and routing policy live here, never in UI components. Native
@@ -80,7 +81,7 @@ export const PROVIDERS: ProviderIntegration[] = [
     iosCapability: "webExact",
     iosEvidence: "user-reported",
     iosNotes:
-      "User retested the same-tab HTTPS route: the correct web title still opens, without native handoff. No verified alternate native route is known.",
+      "User retested: correct web title, no native handoff. Prime's published iOS association covers /detail/. Copy this link to Apple Notes and long-press it: whether Open in Prime Video appears distinguishes device routing preference from unavailable association. An alternate app hostname led to an install page, so it was rejected.",
   },
   {
     id: "paramount",
@@ -109,7 +110,8 @@ export const PROVIDERS: ProviderIntegration[] = [
     iosCapability: "webExact",
     iosEvidence: "user-reported",
     iosNotes:
-      "User confirms the correct title opens quickly in the browser, not the installed Peacock app. Native title routing remains unverified; preserve the working web destination.",
+      "User confirms the correct web title, not native handoff. Peacock's association covers /watch/*, not this /watch-online/ path. The opt-in app candidate comes from this title's official Sign In return destination; native exact-title behavior still needs testing.",
+    appCandidatePath: { from: "/watch-online/", to: "/watch/asset/" },
   },
 ];
 
@@ -178,6 +180,30 @@ export class PrototypeLauncher implements ProviderLauncher {
           "No checked title destination exists for this provider offer. Its homepage is a fallback, not an exact-title launch.",
       };
 
+    let appCandidate: LaunchTarget["appCandidate"];
+    if (platform === "ios" && link.appCandidateUrl && provider.appCandidatePath) {
+      try {
+        const candidate = new URL(link.appCandidateUrl);
+        const { from, to } = provider.appCandidatePath;
+        if (
+          candidate.origin === url.origin &&
+          !candidate.username && !candidate.password &&
+          url.pathname.startsWith(from) &&
+          candidate.pathname === to + url.pathname.slice(from.length) &&
+          candidate.search === url.search && candidate.hash === url.hash
+        ) {
+          appCandidate = {
+            url: link.appCandidateUrl,
+            evidence: "provider-navigation-and-association",
+            requiresDeviceVerification: true,
+            explanation: "Official title navigation supplies this /watch/asset/ destination, and the provider's iOS association includes /watch/*. This supports a test candidate, not a verified native result. If it fails, return to Viewport and use the original Watch action or web fallback.",
+          };
+        }
+      } catch {
+        // A rejected probe never changes the working title destination.
+      }
+    }
+
     return {
       // Keep the checked URL verbatim, including provider-significant query strings.
       url: link.url,
@@ -197,6 +223,7 @@ export class PrototypeLauncher implements ProviderLauncher {
         platform === "ios"
           ? provider.iosNotes
           : "Opens the checked provider title page. The provider and device decide app versus browser; sign-in, region, and plan restrictions may apply.",
+      ...(appCandidate ? { appCandidate } : {}),
     };
   }
 }

@@ -9,7 +9,7 @@ Updated 2026-10-05. V1 is exactly Netflix, Disney+, Hulu, Prime Video, Paramount
 | Hulu | Yes, 4 checked mappings | Yes, user reports working | Yes, user reports working | Same official title URL | User verified native exact; versions/title records pending | `nativeExact` iOS expectation; Only Murders episodes query preserved |
 | Prime Video | Yes, 4 checked mappings | No, current test opens website | Yes, web title works | Checked `/detail/` URL | User retested 1.6; web exact, still no app handoff | `webExact`; native handoff cause is unresolved |
 | Paramount+ | Yes, 2 series + 3 movies | Yes, user explicitly reports app opening | Yes, user reports working | Checked `/shows/…` or `/movies/video/…` URL | User verified native exact; title/version records pending | `nativeExact` iOS expectation; preserve URL/same-tab behavior |
-| Peacock | Yes, 1 season + 1 movie | No, user reports website | Yes, user reports working and fast | Checked `/watch-online/…` URL | User verified web exact; title/version records pending | `webExact`; preserve working web path; Parks targets Season 1 |
+| Peacock | Yes, 1 season + 1 movie | No, user reports website | Yes, user reports working and fast | Checked `/watch-online/…` URL | User verified web exact; title/version records pending | `webExact`; normal route preserved; opt-in `/watch/asset/…` native probe pending (1.7) |
 
 ## Capability and evidence rules
 
@@ -26,3 +26,7 @@ Record provider, exact expected title/year/edition, candidate URL, iPhone/iPad m
 ## Latest device report — 2026-10-05
 
 The user confirms the updated prototype has loaded, Paramount+ and Peacock title launching work well, and loading is fast. They explicitly identify both Prime and Peacock as opening webpages rather than native apps. The user then explicitly confirmed Paramount+ opens in its native app. Title names, device/app versions, and movie-versus-series coverage were not supplied. No launch URL or navigation behavior is changed in response to this report.
+
+## 1.7 handoff probe
+
+Peacock’s normal Watch route still carries the user-verified web-exact status. Its separate opt-in app candidate uses official title navigation and association evidence, and remains physically unverified. Prime’s association covers the current path; its root cause remains unresolved. An alternate app hostname was rejected after an install-page redirect. See [the focused investigation](native-handoff-probe.md).

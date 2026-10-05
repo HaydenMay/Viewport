@@ -69,6 +69,12 @@ export interface LaunchTarget {
   evidence: "user-reported-provider" | "official-web-page" | "none";
   requiresDeviceVerification: boolean;
   explanation: string;
+  appCandidate?: {
+    url: string;
+    evidence: "provider-navigation-and-association";
+    requiresDeviceVerification: true;
+    explanation: string;
+  };
 }
 export interface ProviderLauncher {
   resolve(offer: Offer, platform?: LaunchPlatform): LaunchTarget;

@@ -4,7 +4,7 @@ A unified streaming discovery prototype: choose your subscriptions, browse one c
 
 **Live:** [Open Viewport](https://haydenmay.github.io/Viewport/) · [Public repository](https://github.com/HaydenMay/Viewport)
 
-## Milestone 1.6: Big 6 launch integration
+## Milestone 1.7: Big 6 integration and handoff probes
 
 V1 supports exactly **Netflix, Disney+, Hulu, Prime Video, Paramount+, and Peacock**. Max is retired from V1. The existing discovery UI, filters, and working Netflix/Disney+/Hulu URLs are preserved. Select Paramount+ and Peacock in Preferences; saved households retain their other service choices and retired Max selections are discarded.
 
@@ -53,3 +53,7 @@ Relative assets and native dialogs work on GitHub Pages without a client router.
 - [Deferred native validation](docs/deep-link-validation.md)
 
 No accounts, payments, production backend, AI classification, commercial API subscriptions, or native tvOS development are included. Do not begin another major feature until the current device results are returned. No open-source license has been selected; third-party tools retain their licenses. Reusable source and original artwork exports are preserved.
+
+## Focused iOS handoff probe — 1.7
+
+Every normal Watch URL and navigation policy remains unchanged. `?debug=links` adds a Peacock **Try app link** action using the same title’s official `/watch/asset/…` destination, which matches its published iOS association. This is an unverified native candidate with the existing web link kept available. Prime’s current path already appears in its association; an alternate host led to an install page and was rejected. See [research and the short retest](docs/native-handoff-probe.md).

@@ -346,9 +346,13 @@ try {
   assert.match(report, /Physical verification needed/);
   assert.match(report, /Not imported; prototype fixture/);
   assert.equal(
-    await debug.locator(".launch-diagnostics a").getAttribute("href"),
+    await debug.locator("[data-web-fallback]").getAttribute("href"),
     "https://www.peacocktv.com/watch-online/tv/parks-and-recreation/5883799404534408112/seasons/1",
   );
+  assert.equal(await debug.locator("[data-app-probe]").getAttribute("href"),
+    "https://www.peacocktv.com/watch/asset/tv/parks-and-recreation/5883799404534408112/seasons/1");
+  assert.equal(await debug.locator("[data-app-probe]").getAttribute("target"), "_self");
+  assert.match(report, /Pending physical-device test; native success is not claimed/);
   assert.equal(
     await debug.evaluate(() => {
       const modal = document.querySelector("#details-dialog");
@@ -360,6 +364,12 @@ try {
     path: `${output}/link-diagnostics-mobile.png`,
     fullPage: true,
   });
+  await debug.getByRole("button", { name: "Close title details" }).click();
+  await debug.locator('.title-card[data-title="maisel"]').click();
+  assert.equal(await debug.locator("[data-app-probe]").count(), 0);
+  assert.equal(await debug.locator("[data-web-fallback]").getAttribute("href"),
+    "https://www.primevideo.com/detail/0N2ZNLA18SIYYKK3H9W469YBKQ");
+  assert.match(await debug.locator(".launch-diagnostics").textContent(), /Apple Notes/);
   await debug.close();
   results.push(
     "Opt-in Peacock diagnostics show exact URL, content ID, capability, fallback, and device-verification state without mobile overflow.",

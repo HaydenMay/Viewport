@@ -61,3 +61,11 @@ Follow-up: the user now confirms the update loaded and reports successful Paramo
 ## Native checks still required
 
 Follow [the physical-device probe](native-probe.md) and [six-provider matrix](deep-link-validation.md). A public title page or unspecified user success report does not certify iPhone, iPad, or Apple TV exact-title routing. The next native catalog must exclude routes that fail on its actual platform.
+
+## Milestone 1.7 local verification
+
+35 tests pass, including a new Peacock candidate test observed failing before implementation. Strict TypeScript and the Vite production build pass. A direct comparison confirms all 24 primary title URL mappings are unchanged. The full production-browser QA passes on desktop, both iPad orientations, mobile, 320px width, and 200% text, with no page errors or failed local assets. Normal actions and all existing filters/preferences remain intact.
+
+Opt-in mobile diagnostics expose the exact observed Peacock season candidate, pending-device label, same-tab test action, and original web fallback without overflow. Prime exposes no rejected app-host candidate and retains the original title fallback plus Apple Notes testing guidance. The candidate control was visually inspected in the mobile capture. No native handoff is claimed from desktop/browser checks.
+
+Publication and live 1.7 checks are pending at this record; GitHub Actions waiting remains out of scope per the user’s outage instruction.

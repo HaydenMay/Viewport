@@ -6,6 +6,7 @@ export interface TitlePageLink {
   url: string;
   checkedAt: string;
   evidence: "official-title-page";
+  appCandidateUrl?: string;
 }
 
 // Manually located official pages, not scraped catalog data or native-launch proof.
@@ -109,16 +110,19 @@ export const TITLE_PAGE_LINKS: TitlePageLink[] = [
     "parks-and-rec",
     "peacock",
     "https://www.peacocktv.com/watch-online/tv/parks-and-recreation/5883799404534408112/seasons/1",
+    "https://www.peacocktv.com/watch/asset/tv/parks-and-recreation/5883799404534408112/seasons/1",
   ],
   [
     "despicable-me-2",
     "peacock",
     "https://www.peacocktv.com/watch-online/movies/despicable-me-2/41bacec9-efbf-3ae4-8358-5f4c1917c743",
+    "https://www.peacocktv.com/watch/asset/movies/despicable-me-2/41bacec9-efbf-3ae4-8358-5f4c1917c743",
   ],
-].map(([titleId, providerId, url]) => ({
+].map(([titleId, providerId, url, appCandidateUrl]) => ({
   titleId,
   providerId: providerId as ProviderId,
   url,
   checkedAt: "2026-10-05",
   evidence: "official-title-page",
+  appCandidateUrl,
 }));

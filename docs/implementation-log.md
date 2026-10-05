@@ -26,3 +26,7 @@ Provider-launch tests were observed failing before the new model, then passed af
 ## Device results after 1.6 deployment
 
 The user reports the updated site loaded, Paramount+/Peacock title launching works, and loading is fast. Prime and Peacock explicitly open the website rather than the native app. Record Peacock iOS evidence as user-reported `webExact`; keep Prime `webExact` after its same-tab retest. A subsequent explicit confirmation establishes Paramount+ native app opening; promote its iOS expectation to `nativeExact` with user-reported evidence. Updated diagnostics and documentation only; preserved every launch URL and navigation policy.
+
+## 1.7 — bounded Prime/Peacock investigation
+
+Retrieved current public association files directly, retaining relevant entries/hashes. Peacock’s `/watch-online/…` route does not match published app paths; official Sign In return links supply `/watch/asset/…` for both fixtures. Added opt-in, identity-validated candidates only, preserving all 24 primary URLs/navigation. Prime’s current `/detail/…` is listed in its association. Its Share UI retains the same title URL; an alternate app hostname redirected to an install page and was rejected. Follow Apple Notes long-press diagnostics next. The candidate test failed before implementation, then passed; malformed/mismatched candidates fail closed. No native result is claimed.

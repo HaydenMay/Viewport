@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { PrototypeLauncher, PROVIDERS } from "../src/providers.ts";
 import type { Offer, ProviderId } from "../src/domain.ts";
+import { TITLE_PAGE_LINKS } from "../src/title-links.ts";
 
 const offer = (providerId: ProviderId, titleId: string): Offer => ({
   providerId,
@@ -11,6 +12,40 @@ const offer = (providerId: ProviderId, titleId: string): Offer => ({
   provenance: "prototype",
 });
 const launcher = new PrototypeLauncher();
+
+test("Peacock app probes preserve the checked web actions and exact movie/season identity", () => {
+  for (const [titleId, path] of [
+    ["despicable-me-2", "/movies/despicable-me-2/41bacec9-efbf-3ae4-8358-5f4c1917c743"],
+    ["parks-and-rec", "/tv/parks-and-recreation/5883799404534408112/seasons/1"],
+  ]) {
+    const target = launcher.resolve(offer("peacock", titleId), "ios");
+    assert.equal(target.url, `https://www.peacocktv.com/watch-online${path}`);
+    assert.equal(target.fallbackUrl, target.url);
+    assert.equal(target.expectedCapability, "webExact");
+    assert.equal(target.appCandidate?.url, `https://www.peacocktv.com/watch/asset${path}`);
+    assert.equal(target.appCandidate?.requiresDeviceVerification, true);
+    assert.equal(target.appCandidate?.evidence, "provider-navigation-and-association");
+    assert.equal(launcher.resolve(offer("peacock", titleId), "web").appCandidate, undefined);
+  }
+  assert.equal(launcher.resolve(offer("prime", "maisel"), "ios").appCandidate, undefined);
+  assert.equal(launcher.resolve(offer("peacock", "unmapped"), "ios").appCandidate, undefined);
+});
+
+test("app candidates cannot change title identity or introduce another origin or custom scheme", () => {
+  const link = TITLE_PAGE_LINKS.find((link) => link.titleId === "parks-and-rec")!;
+  for (const appCandidateUrl of [
+    "peacock://watch/asset/tv/parks-and-recreation/5883799404534408112/seasons/1",
+    "https://evil.example/watch/asset/tv/parks-and-recreation/5883799404534408112/seasons/1",
+    "https://www.peacocktv.com/watch/asset/tv/other/5883799404534408112/seasons/1",
+    "https://www.peacocktv.com/watch/asset/tv/parks-and-recreation/5883799404534408112/seasons/2",
+    "https://user:password@www.peacocktv.com/watch/asset/tv/parks-and-recreation/5883799404534408112/seasons/1",
+    "not a URL",
+  ]) {
+    const target = new PrototypeLauncher([{...link, appCandidateUrl}]).resolve(offer("peacock", "parks-and-rec"), "ios");
+    assert.equal(target.appCandidate, undefined);
+    assert.equal(target.url, link.url, "a rejected probe must preserve the working web destination");
+  }
+});
 
 test("every Big 6 integration has a safe HTTPS fallback for missing title mappings", () => {
   const domains = {

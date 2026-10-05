@@ -57,3 +57,7 @@ Stop after these results. Native tvOS development, broader catalog imports, and 
 ## Follow-up device result — 2026-10-05
 
 After 1.6 loaded, the user reported successful, fast Paramount+ and Peacock title launches. Prime and Peacock explicitly remain browser launches. The same-tab Prime experiment did not establish native handoff. The user then explicitly confirmed Paramount+ opens in the native app; its iOS expectation is now `nativeExact` based on that report. The earlier research table documents the pre-test state; the compatibility matrix carries the latest observations. Preserve all working URLs and avoid another speculative route change.
+
+## 1.7 investigation
+
+The provider association files are now successfully retrieved by direct public HTTPS requests. Peacock covers `/watch/*`, while Prime covers its existing `/detail/*` route. Peacock’s own title pages supply matching `/watch/asset/…` destinations; these are opt-in probes with unchanged Watch fallbacks. Prime’s alternate app hostname redirected to an install page and was rejected. See [primary evidence and device retest](native-handoff-probe.md). This supersedes the earlier retrieval limitation; it does not prove native success.

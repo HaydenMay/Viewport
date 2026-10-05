@@ -1,0 +1,120 @@
+{
+  "note": "Relevant public provider association entries, not proof of installed-app entitlement or physical-device routing. Other app entries omitted.",
+  "observations": [
+    {
+      "provider": "peacock",
+      "sourceUrl": "https://www.peacocktv.com/.well-known/apple-app-site-association",
+      "checkedAt": "2026-10-05",
+      "httpStatus": 200,
+      "sha256": "228e973fb802580b0f8a62ac31ade0aecc4343fac1bf1d9908478836991bda33",
+      "relevantApp": {
+        "appID": "W76B757YRY.com.peacocktv.peacock",
+        "paths": [
+          "/deeplink/*",
+          "/watch/*"
+        ]
+      }
+    },
+    {
+      "provider": "prime",
+      "sourceUrl": "https://www.primevideo.com/.well-known/apple-app-site-association",
+      "checkedAt": "2026-10-05",
+      "httpStatus": 200,
+      "sha256": "85a8ce3346565315caf59bfa52c8ebb5c37ac00235acbb99e780892898ee8d77",
+      "relevantApp": {
+        "appID": "J7P34ALZ5R.com.amazon.aiv.AIVApp",
+        "paths": [
+          "/",
+          "/storefront",
+          "/storefront/*",
+          "/movie",
+          "/tv",
+          "/kids",
+          "/store",
+          "/prime",
+          "/search",
+          "/search/*",
+          "/categories",
+          "/genre/*",
+          "/detail/*",
+          "/watch/*",
+          "/dp/*",
+          "/gp/video/detail/*",
+          "/gp/video/dp/*",
+          "/mystuff",
+          "/mystuff/*",
+          "/region/na/",
+          "/region/na/storefront",
+          "/region/na/storefront/*",
+          "/region/na/movie",
+          "/region/na/tv",
+          "/region/na/kids",
+          "/region/na/store",
+          "/region/na/prime",
+          "/region/na/search",
+          "/region/na/search/*",
+          "/region/na/categories",
+          "/region/na/genre/*",
+          "/region/na/detail/*",
+          "/region/na/watch/*",
+          "/region/na/dp/*",
+          "/region/na/gp/video/detail/*",
+          "/region/na/gp/video/dp/*",
+          "/region/na/mystuff",
+          "/region/na/mystuff/*",
+          "/region/eu/",
+          "/region/eu/storefront",
+          "/region/eu/storefront/*",
+          "/region/eu/movie",
+          "/region/eu/tv",
+          "/region/eu/kids",
+          "/region/eu/store",
+          "/region/eu/prime",
+          "/region/eu/search",
+          "/region/eu/search/*",
+          "/region/eu/categories",
+          "/region/eu/genre/*",
+          "/region/eu/detail/*",
+          "/region/eu/watch/*",
+          "/region/eu/dp/*",
+          "/region/eu/gp/video/detail/*",
+          "/region/eu/gp/video/dp/*",
+          "/region/eu/mystuff",
+          "/region/eu/mystuff/*",
+          "/region/fe/",
+          "/region/fe/storefront",
+          "/region/fe/storefront/*",
+          "/region/fe/movie",
+          "/region/fe/tv",
+          "/region/fe/kids",
+          "/region/fe/store",
+          "/region/fe/prime",
+          "/region/fe/search",
+          "/region/fe/search/*",
+          "/region/fe/categories",
+          "/region/fe/genre/*",
+          "/region/fe/detail/*",
+          "/region/fe/watch/*",
+          "/region/fe/dp/*",
+          "/region/fe/gp/video/detail/*",
+          "/region/fe/gp/video/dp/*",
+          "/region/fe/mystuff",
+          "/region/fe/mystuff/*"
+        ]
+      }
+    },
+    {
+      "provider": "prime",
+      "sourceUrl": "https://app.primevideo.com/.well-known/apple-app-site-association",
+      "checkedAt": "2026-10-05",
+      "httpStatus": 200,
+      "sha256": "d67ea98d3c067d643484f9ef7d815cc0f64cb74e939bbef5628d04efd2cf047b",
+      "relevantApp": {
+        "appID": "J7P34ALZ5R.com.amazon.aiv.AIVApp",
+        "paths": [
+          "*"
+        ]
+      }
+    }
+  ]
+}

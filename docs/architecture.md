@@ -44,3 +44,7 @@ Preferences use `viewport.preferences.v1`; old service choices are preserved, Ma
 Semantic controls, live result counts, visible focus, reduced-motion support, and native dialog Escape/focus behavior are preserved. Existing working routes are covered by literal URL/navigation regression checks. The Pages workflow still builds/tests/deploys `main`.
 
 Accounts, payments, API purchases, production refresh backends, automated classification, broad catalog expansion, and native tvOS work are outside this milestone. Await the physical-device outcomes before the next major feature.
+
+## Opt-in app candidates (1.7)
+
+A checked title mapping can carry an observed `appCandidateUrl`. The provider registry defines its permitted path conversion; the resolver validates same HTTPS origin and unchanged title slug, ID, season, query, and fragment before exposing an `appCandidate` in an iOS plan. Candidate evidence and physical verification are independent of the primary route’s capability. Only opt-in diagnostics render it. Discovery, primary Watch actions, and fallback URLs remain unchanged. There is no URL guessing, scheme timeout, or extra service/API.
