@@ -1,15 +1,15 @@
 # Native provider deep-link validation matrix
 
-**Status: unverified for every native provider/platform combination.** Updated 2026-10-05 UTC. This web prototype intentionally uses homepage links. An HTTPS provider homepage is not evidence of native routing or an exact title landing.
+**Status: unverified for every native provider/platform combination.** Updated 2026-10-05 UTC. Milestone 1.5 uses official title pages where located, with explicit homepage fallbacks. An HTTPS title page is a native-routing candidate, not evidence of an exact native title landing.
 
 ## Destination matrix
 
 | Provider | Prototype web destination | iPhone exact native title | iPad exact native title | Apple TV exact native title | Title URL evidence |
 | --- | --- | --- | --- | --- | --- |
-| Disney+ | `https://www.disneyplus.com/` homepage | Untested | Untested | Untested | No title URL collected |
-| Hulu | `https://www.hulu.com/` homepage | Untested | Untested | Untested | No title URL collected |
-| Netflix | `https://www.netflix.com/` homepage | Untested | Untested | Untested | No title URL collected |
-| Prime Video | `https://www.primevideo.com/` homepage | Untested | Untested | Untested | No title URL collected |
+| Disney+ | 5 official title pages | Untested | Untested | Untested | See title-link evidence |
+| Hulu | 4 official title pages | Untested | Untested | Untested | See title-link evidence |
+| Netflix | 4 official title pages | Untested | Untested | Untested | See title-link evidence |
+| Prime Video | 4 official title/season pages | Untested | Untested | Untested | See title-link evidence |
 | Max (HBO Max destination) | `https://www.hbomax.com/` homepage | Untested | Untested | Untested | No title URL collected |
 
 Keep `max` as the internal identifier and the brief's Max label; the homepage destination uses HBO Max branding. Branding/domain changes do not establish a URL scheme. Revalidate destinations before release.
@@ -52,3 +52,7 @@ On iOS/iPadOS, `UIApplication.open` with `universalLinksOnly: true` can distingu
 Only use a custom scheme if a provider documents it or a permitted, reproducible physical test validates it. `canOpenURL` alone does not prove an exact-title route. Document required query-scheme entries only after selecting an evidenced scheme, rather than inventing a scheme list.
 
 Primary references: [Apple universal links](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app), [associated domains](https://developer.apple.com/documentation/xcode/supporting-associated-domains), [universalLinksOnly](https://developer.apple.com/documentation/uikit/uiapplication/openexternalurloptionskey/universallinksonly).
+
+## Candidate URLs collected for 1.5
+
+See [title-link evidence](title-link-evidence.md) and `src/title-links.ts`. Test Moana, Abbott Elementary, Our Planet, and The Marvelous Mrs. Maisel first. Max still needs one official share URL from a currently entitled account. The user’s earlier observation—provider opens but stays on its home menu—was against the homepage-only build; it is a partial result, not validation of these new URLs. No device/OS/app versions were supplied, so all native cells remain Untested.

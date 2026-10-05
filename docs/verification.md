@@ -1,12 +1,12 @@
 # Verification and publication status
 
-Checked 2026-10-05 UTC. The local prototype is implemented and validated. **The public GitHub repository and deployed Pages site are not yet created/verified**: the connected GitHub tool can write files but exposes neither repository creation nor Pages enablement. Browser fallback requires user approval. Do not claim the target URL is live.
+Checked 2026-10-05 UTC. The public repository [HaydenMay/Viewport](https://github.com/HaydenMay/Viewport) and [GitHub Pages site](https://haydenmay.github.io/Viewport/) are published. Initial application commit `7471a87b0a49df7085de361086769111e098a7bc` deployed successfully in [workflow run 37271329774, attempt 2](https://github.com/HaydenMay/Viewport/actions/runs/37271329774). Attempt 1 passed the build but started before Pages was enabled; enabling GitHub Actions as the Pages source and rerunning deploy resolved it. The live catalog showed 14 → 18 → 20 immediately and retained edits after reload.
 
 ## Local evidence
 
 | Check | Result |
 | --- | --- |
-| Node filtering, fixture, persistence, and provider tests | 21 pass, zero failures |
+| Node filtering, fixture, persistence, and provider tests | 24 pass, zero failures |
 | Strict TypeScript check | Pass |
 | Vite production build | Pass; static `dist` output |
 | Browser served at `/Viewport/` repository subpath | Pass; relative scripts, CSS, SVGs load |
@@ -18,7 +18,7 @@ Checked 2026-10-05 UTC. The local prototype is implemented and validated. **The 
 | Artwork-only change | Mandalorian cover switches; title remains |
 | No subscriptions | Helpful empty state |
 | Max-only subscriptions + multi-offer title | Fellowship details show only Max's homepage action |
-| Title details | Honest homepage notice, Escape dismissal, focus restored to title card |
+| Title details | Destination-specific link labels and native-routing notice, Escape dismissal, focus restored to title card |
 | Blocked localStorage | Catalog usable, visible saving-failure message |
 | Browser errors / failed local assets | None |
 
@@ -40,9 +40,9 @@ An externally installed Playwright module can be supplied with `VIEWPORT_PLAYWRI
 
 One independent read-only reviewer checked the complete source and documentation, ran tests and TypeScript, and checked 960 subscription/query/provider combinations. No critical defects. Its important finding was the icon-only Preferences button's missing accessible name at ≤1000px; adding the explicit label fixes it, with a browser accessibility regression assertion. Its verification-document concern is resolved by this evidence file. No repeat review was requested; fixes were validated by the complete test/build/browser checks.
 
-## Publication checks still required
+## Milestone 1.5 checks
 
-Create public `HaydenMay/Viewport`; push the complete source and lockfile; enable GitHub Actions as the Pages source; observe successful build/deploy jobs; open the actual emitted URL and repeat the production browser checks there. Document the deployment commit, workflow URL, final Pages URL, and actual outcome. Repository creation and deployed-site verification remain pending; local results do not substitute for them.
+17 manually located official title/season destinations replace homepage-only launching; four Max offers remain explicit fallbacks. Tests cover actual Moana, Prime Fellowship, Hulu Abbott, and Netflix Our Planet destinations, provider-specific fallback, and retained false native-verification status. Browser QA checks the Mandalorian URL, Title page label, Max-only fallback, and all previous filtering/layout behavior. Production build and 24 tests pass. Live 1.5 deployment verification is recorded after publication; these local checks do not prove native routing.
 
 ## Native checks still required
 

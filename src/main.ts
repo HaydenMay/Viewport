@@ -15,7 +15,7 @@ import {
   PREFERENCE_KEY,
   savePreferences,
 } from "./preferences.ts";
-import { HomepageLauncher, PROVIDERS, providerById } from "./providers.ts";
+import { PrototypeLauncher, PROVIDERS, providerById } from "./providers.ts";
 import {
   cover,
   escapeHtml,
@@ -28,7 +28,7 @@ import {
 
 const catalogSource = new PrototypeCatalog();
 const availabilitySource = new PrototypeAvailability();
-const launcher = new HomepageLauncher();
+const launcher = new PrototypeLauncher();
 let preferences: Preferences;
 let storageAvailable = true;
 try {
@@ -52,7 +52,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
     <button class="preferences-button" data-open-preferences aria-label="Preferences">${icon("sliders")}<span>Preferences</span></button></div>
   </div></header>
   <main class="main-shell">
-    <div class="catalog-heading"><div><span class="eyebrow subtle">YOUR STREAMING, TOGETHER</span><h1>Your catalog</h1><p id="service-summary">Loading your catalog…</p></div><button class="prototype-badge" data-open-about><span></span>Discovery prototype</button></div>
+    <div class="catalog-heading"><div><span class="eyebrow subtle">YOUR STREAMING, TOGETHER</span><h1>Your catalog</h1><p id="service-summary">Loading your catalog…</p></div><button class="prototype-badge" data-open-about><span></span>Prototype 1.5</button></div>
     <div class="services-bar"><div id="provider-tabs" class="provider-tabs" role="group" aria-label="Browse by streaming service"></div><button class="text-button manage-services" data-open-preferences>Manage services ${icon("arrow")}</button></div>
     <section class="quick-filters" aria-label="Household content controls">
       <div class="filter-intro">${icon("shield")}<span>Your house.<br /><strong>Your rules.</strong></span></div>
@@ -70,7 +70,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   </main>
   <dialog id="preferences-dialog" class="preferences-dialog" aria-labelledby="preferences-title"><div class="dialog-top"><div><span class="eyebrow subtle">SET YOUR PREFERENCES</span><h2 id="preferences-title">Make it your catalog</h2></div><button class="icon-button" data-close="preferences-dialog" aria-label="Close preferences">${icon("close")}</button></div><div id="preferences-body"></div><div class="dialog-bottom"><span>Changes apply immediately.</span><button class="button-primary" data-close="preferences-dialog">Back to browsing ${icon("arrow")}</button></div></dialog>
   <dialog id="details-dialog" class="details-dialog" aria-labelledby="details-title"><div id="details-body"></div></dialog>
-  <dialog id="about-dialog" class="about-dialog" aria-labelledby="about-title"><div class="dialog-top"><h2 id="about-title">A catalog you control</h2><button class="icon-button" data-close="about-dialog" aria-label="Close prototype information">${icon("close")}</button></div><div class="about-content"><p>Viewport brings your services into one place, with household preferences that decide what appears. It is for everyone, with controls you can adjust.</p><h3>What you’re trying</h3><p>Search, service selection, content filters, title details, and preferences saved on this browser. The 20 real title names are demonstration examples. Summaries and illustrations are original.</p><h3>Sample data, clearly labeled</h3><p>Provider availability, ratings, and safety annotations are illustrative, manually entered prototype data. They are not verified current US availability or comprehensive content guidance. Promotional-art annotations describe a hypothetical promotion; these drawings are not official posters.</p><h3>What happens when you watch</h3><p>“Watch on” opens the provider’s website homepage. Find the title there. Exact-title links and native iPhone, iPad, and Apple TV app launches have not been verified.</p><h3>Household controls</h3><p>Your choices apply to this browser only. They do not change provider recommendations or profiles after you leave Viewport, and are not protected by a PIN. Neutral artwork can replace an image without hiding its title.</p><p class="muted">Viewport is a working name. No streaming services are affiliated with this prototype.</p></div></dialog>`;
+  <dialog id="about-dialog" class="about-dialog" aria-labelledby="about-title"><div class="dialog-top"><h2 id="about-title">A catalog you control</h2><button class="icon-button" data-close="about-dialog" aria-label="Close prototype information">${icon("close")}</button></div><div class="about-content"><p>Viewport brings your services into one place, with household preferences that decide what appears. It is for everyone, with controls you can adjust.</p><h3>What you’re trying</h3><p>Search, service selection, content filters, title details, and preferences saved on this browser. The 20 real title names are demonstration examples. Summaries and illustrations are original.</p><h3>Sample data, clearly labeled</h3><p>Provider availability, ratings, and safety annotations are illustrative, manually entered prototype data. They are not verified current US availability or comprehensive content guidance. Promotional-art annotations describe a hypothetical promotion; these drawings are not official posters.</p><h3>What happens when you watch</h3><p>“Watch on” uses an official title page when one has been located. Each action shows “Title page” or “Homepage fallback.” Your device may open the app or browser; exact-title native routing on iPhone, iPad, and Apple TV is still untested. Sign-in, region, and plan restrictions may affect the result.</p><h3>Household controls</h3><p>Your choices apply to this browser only. They do not change provider recommendations or profiles after you leave Viewport, and are not protected by a PIN. Neutral artwork can replace an image without hiding its title.</p><p class="muted">Viewport is a working name. No streaming services are affiliated with this prototype.</p></div></dialog>`;
 
 const byId = <T extends HTMLElement>(id: string) =>
   document.getElementById(id) as T;
@@ -189,14 +189,16 @@ async function showDetails(title: Title, open = true): Promise<void> {
     ),
   ];
   byId("details-body").innerHTML =
-    `<button class="icon-button detail-close" data-close="details-dialog" aria-label="Close title details">${icon("close")}</button><div class="detail-layout">${cover(title, preferences, "detail-cover")}<div class="detail-copy"><span class="eyebrow subtle">${title.kind.toUpperCase()} · SAMPLE METADATA</span><h2 id="details-title">${escapeHtml(title.name)}</h2><p class="detail-meta">${title.year} <span>·</span> ${title.rating} <span>·</span> ${title.duration}</p><p class="genre-line">${title.genres.join(" · ")}</p><p class="detail-summary">${escapeHtml(title.summary)}</p><div class="annotation-block"><h3>Sample content notes</h3><div class="content-tags">${tags.length ? tags.map((tag) => `<span>${tag}</span>`).join("") : "<span>No selected sample flags</span>"}</div><p>Illustrative annotations, not a complete content review.</p>${shouldReplaceArtwork(title, preferences) ? `<p class="art-notice">${icon("eye")} Neutral artwork applied. The title stays available.</p>` : ""}</div><div class="watch-block"><h3>Watch with your services</h3><p>Sample US subscription availability</p><div class="watch-actions">${subscribedOffers.map(watchAction).join("")}</div><div class="launch-note">${icon("arrow")}<span>Opens the provider website homepage. Search for this title there. Exact-title native app launching is unverified.</span></div></div></div></div>`;
+    `<button class="icon-button detail-close" data-close="details-dialog" aria-label="Close title details">${icon("close")}</button><div class="detail-layout">${cover(title, preferences, "detail-cover")}<div class="detail-copy"><span class="eyebrow subtle">${title.kind.toUpperCase()} · SAMPLE METADATA</span><h2 id="details-title">${escapeHtml(title.name)}</h2><p class="detail-meta">${title.year} <span>·</span> ${title.rating} <span>·</span> ${title.duration}</p><p class="genre-line">${title.genres.join(" · ")}</p><p class="detail-summary">${escapeHtml(title.summary)}</p><div class="annotation-block"><h3>Sample content notes</h3><div class="content-tags">${tags.length ? tags.map((tag) => `<span>${tag}</span>`).join("") : "<span>No selected sample flags</span>"}</div><p>Illustrative annotations, not a complete content review.</p>${shouldReplaceArtwork(title, preferences) ? `<p class="art-notice">${icon("eye")} Neutral artwork applied. The title stays available.</p>` : ""}</div><div class="watch-block"><h3>Watch with your services</h3><p>Sample US subscription availability</p><div class="watch-actions">${subscribedOffers.map(watchAction).join("")}</div><div class="launch-note">${icon("arrow")}<span>Title page links may open the app or browser. Exact-title app routing has not been tested; sign-in or a different plan may be required. Homepage fallbacks require searching in the provider.</span></div></div></div></div>`;
   openTitleId = title.id;
   if (open) dialog("details-dialog").showModal();
 }
 function watchAction(offer: Offer): string {
   const provider = providerById(offer.providerId);
   const target = launcher.resolve(offer);
-  return `<a class="watch-link" href="${escapeHtml(target.url)}" target="_blank" rel="noopener noreferrer" aria-label="Watch on ${provider.name}, opens provider website homepage in a new tab"><span class="provider-dot" style="background:${provider.color}"></span>Watch on ${provider.name}${icon("arrow")}</a>`;
+  const titlePage = target.scope === "provider-title-page";
+  const label = titlePage ? "Title page" : "Homepage fallback";
+  return `<div class="watch-option"><a class="watch-link" href="${escapeHtml(target.url)}" target="_blank" rel="noopener noreferrer" aria-label="Watch on ${provider.name}, ${titlePage ? "opens this title’s provider page" : "opens provider homepage; search for the title there"} in a new tab"><span class="provider-dot" style="background:${provider.color}"></span><span class="watch-label">Watch on ${provider.name}<small>${label}</small></span>${icon("arrow")}</a>${titlePage ? "" : `<p class="fallback-note">No checked title link for ${provider.name}. Search for “${escapeHtml(titles.find((title) => title.id === offer.titleId)?.name ?? offer.titleId)}” there.</p>`}</div>`;
 }
 function changedPreferences(): void {
   persist();

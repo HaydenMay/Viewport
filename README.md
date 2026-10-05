@@ -4,11 +4,15 @@ A unified streaming discovery prototype: choose your subscriptions, browse one c
 
 ## Try the prototype
 
+**Live:** [Open Viewport](https://haydenmay.github.io/Viewport/) · [Public repository](https://github.com/HaydenMay/Viewport)
+
+Milestone **1.5** adds title-specific provider links.
+
 Choose services in **Preferences**, search across them, or scope the catalog to one provider. **Hide Horror**, **Hide Halloween / seasonal**, and the maturity limit apply immediately to both the catalog and the featured title. Preferences also offer violence, sexual-content, and strong-language exclusions. **Use neutral artwork** replaces a promotional image independently of whether the title itself is acceptable. Preferences persist on this browser only.
 
 This milestone includes 20 representative real movie/show names across Disney+, Hulu, Netflix, Prime Video, and Max. Metadata is manually entered sample data, with original summaries and original SVG illustrations. **Availability, content annotations, and promotional-art flags are illustrative, not verified current availability or comprehensive content advice.** No service is scraped, no API key is needed, and no official posters are included.
 
-**Watch on [provider] opens that provider's website homepage.** Find the title there. Exact-title native app launching on iOS, iPadOS, and tvOS remains unverified. This prototype does not alter provider home screens, advertisements, profiles, or recommendations after launching them.
+**Watch on [provider] uses an official title page for 17 sample destinations.** The button labels distinguish title pages from homepage fallbacks. Max’s four illustrative offers remain homepage fallbacks because no usable official title destination was confirmed. Native exact-title app launching on iOS, iPadOS, and tvOS remains unverified. Sign-in, region, and subscription restrictions may still intervene. This prototype does not alter provider home screens, advertisements, profiles, or recommendations after launching them.
 
 ## Develop
 
@@ -37,9 +41,9 @@ The included [.github/workflows/pages.yml](.github/workflows/pages.yml) installs
 2. Push these sources, including `package-lock.json` and `.github/workflows/pages.yml`.
 3. Set **Settings → Pages → Build and deployment → Source → GitHub Actions**.
 4. Confirm the workflow's `build` and `deploy` jobs pass, then use its emitted Pages URL.
-5. On the deployed site, repeat search, service selection, immediate hide/show, details, reload persistence, and provider-homepage link checks. Check the browser console and asset responses. A successful local build is not proof of deployed-site correctness.
+5. On the deployed site, repeat search, service selection, immediate hide/show, details, reload persistence, and title-page and homepage-fallback link checks. Check the browser console and asset responses. A successful local build is not proof of deployed-site correctness.
 
-Publication status and actual validation evidence are in [docs/verification.md](docs/verification.md). Do not advertise an unverified URL as live.
+Publication status and actual validation evidence are in [docs/verification.md](docs/verification.md). Title URL provenance and limitations are in [docs/title-link-evidence.md](docs/title-link-evidence.md).
 
 ## Architecture and next milestone
 

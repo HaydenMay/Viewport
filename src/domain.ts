@@ -48,7 +48,7 @@ export interface AvailabilitySource {
 }
 export interface LaunchTarget {
   url: string;
-  scope: "provider-homepage";
+  scope: "provider-homepage" | "provider-title-page";
   nativeTitleVerified: false;
   explanation: string;
 }

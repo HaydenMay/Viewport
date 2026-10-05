@@ -12,7 +12,7 @@ Vite, strict TypeScript, semantic HTML, CSS, and native dialogs provide a lightw
 | `src/catalog.ts` | Twenty fixture entries; catalog/availability implementations |
 | `src/filter.ts` | Pure content, maturity, provider, and search filtering; independent art decision |
 | `src/preferences.ts` | Safe defaults, versioned parsing, and failure-aware browser persistence |
-| `src/providers.ts` | Provider registry and honest homepage launch adapter |
+| `src/providers.ts` | Provider registry and title-page launch adapter with explicit homepage fallback |
 | `src/ui.ts` | Escaped rendering helpers for cards, features, switches, and icons |
 | `src/main.ts` | Interaction orchestration and small in-memory state |
 | `src/styles.css` | Cinema theme, responsive grid, dialogs, touch and focus states |
@@ -41,3 +41,7 @@ Use semantic buttons, label-associated inputs, switch roles, accessible live res
 ## Intentional boundaries
 
 The prototype proves discovery and filtering. It does not prove native deep links, provider entitlement, up-to-date catalogs, automated classification, official promotional-art reuse, or parental enforcement. Provider names are destination labels; Viewport has no affiliation. Native development starts with the launch probe, before investment in a full Apple TV catalog UI.
+
+## Milestone 1.5: title destinations
+
+`src/title-links.ts` keeps manually observed official destinations separate from illustrative availability. `PrototypeLauncher` resolves by both title and provider, so a multi-provider title cannot inherit another provider’s URL. `LaunchTarget.scope` distinguishes `provider-title-page` from `provider-homepage`; neither grants native verification. The details interface describes the actual destination for each action. No guessed schemes, timers, app-detection tricks, or catalog crawling are used. Missing Max links remain visible fallbacks. Future availability sources can provide approved destinations through the same adapter without changing filtering.

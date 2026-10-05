@@ -2,6 +2,8 @@
 
 Build one tiny SwiftUI **Viewport Link Probe**, with iOS/iPadOS and tvOS targets sharing a five-provider list and verified candidate URLs. It needs no catalog, account system, backend, TMDB API, or paid availability vendor.
 
+Milestone 1.5 supplies four providers’ official title-page candidates in `src/title-links.ts` and [the evidence log](title-link-evidence.md). Use those to seed the probe after confirming local entitlement. Max needs an official shared title URL. Web observations do not count as native results.
+
 ## First experiment
 
 1. On a device the household already uses, obtain one genuine title share URL per provider using its official share feature or documented title page. Confirm that title is currently available under the test account. Record the exact URL/source; do not generate guessed content IDs or custom schemes. A share URL is a candidate, not native proof.

@@ -126,11 +126,15 @@ try {
   assert.equal(await page.locator("#details-dialog .cover-neutral").count(), 1);
   assert.equal(
     await page.locator("#details-dialog .watch-link").getAttribute("href"),
-    "https://www.disneyplus.com/",
+    "https://www.disneyplus.com/browse/entity-422f6dcc-226f-44e7-98d4-22de69b31cf3",
   );
   assert.match(
     await page.locator(".launch-note").innerText(),
-    /homepage.*unverified/s,
+    /exact-title.*not been tested/is,
+  );
+  assert.match(
+    await page.locator("#details-dialog .watch-link").innerText(),
+    /Title page/,
   );
   await page.keyboard.press("Escape");
   await page.locator("#details-dialog[open]").waitFor({ state: "hidden" });
