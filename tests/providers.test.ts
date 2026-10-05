@@ -82,7 +82,7 @@ test("Prime keeps its exact web destination and uses a direct same-tab handoff e
   assert.equal(target.requiresDeviceVerification, true);
 });
 
-test("Paramount+ and Peacock use checked full-title HTTPS paths without inventing native support", () => {
+test("Paramount+ native and Peacock web expectations follow device reports with unchanged URLs", () => {
   for (const [providerId, titleId, url, id] of [
     [
       "paramount",
@@ -112,7 +112,8 @@ test("Paramount+ and Peacock use checked full-title HTTPS paths without inventin
     const target = launcher.resolve(offer(providerId, titleId), "ios");
     assert.equal(target.url, url);
     assert.equal(target.fallbackUrl, url);
-    assert.equal(target.expectedCapability, "webExact");
+    assert.equal(target.expectedCapability, providerId === "paramount" ? "nativeExact" : "webExact");
+    assert.equal(target.evidence, "user-reported-provider");
     assert.equal(target.exactTitleResolved, true);
     assert.equal(target.providerContentId, id);
     assert.equal(target.requiresDeviceVerification, true);

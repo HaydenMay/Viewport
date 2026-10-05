@@ -1,6 +1,6 @@
 # Verification and publication status
 
-Checked 2026-10-05 UTC. The public [HaydenMay/Viewport repository](https://github.com/HaydenMay/Viewport) and [GitHub Pages site](https://haydenmay.github.io/Viewport/) are published. Milestone 1.6 has completed local validation and is committed to main. Pages deployment is pending because GitHub Actions is unavailable, as reported by the user; no deployed 1.6 success is claimed.
+Checked 2026-10-05 UTC. The public [HaydenMay/Viewport repository](https://github.com/HaydenMay/Viewport) and [GitHub Pages site](https://haydenmay.github.io/Viewport/) are published. Milestone 1.6 has completed local validation and is committed to main. After the earlier Actions outage, the user confirms the updated site loaded and tested its new providers. Workflow completion and live browser regression checks have not been independently rechecked.
 
 ## Milestone 1.6 local evidence
 
@@ -41,7 +41,7 @@ The optional `scripts/browser-qa.mjs` preserves these checks and creates screens
 
 Seven new destinations were located manually on official pages. All five Paramount+ candidates were opened in the cloud browser and showed the expected full movie/series heading and year. Peacock's two official title/season destinations were retrieved; its movie page was also opened in the cloud browser and showed the expected title/year. Other successful official title-page retrievals and regional observations are documented in [title-link evidence](title-link-evidence.md). No catalog crawling, guessed IDs, or private endpoints were used.
 
-The user explicitly confirms Netflix/Disney+/Hulu native exact-title opening on iOS and Prime web-exact opening without native handoff. These are preserved as ground truth, with individual-title/version coverage pending. Paramount+/Peacock have checked web destinations and require real-device tests. Apple TV remains untested; no native development begins here.
+The user explicitly confirms Netflix/Disney+/Hulu native exact-title opening on iOS and Prime web-exact opening without native handoff. These are preserved as ground truth, with individual-title/version coverage pending. The user subsequently confirms Paramount+ native exact-title launching and Peacock web-exact launching. Prime still opens the web title after the same-tab change. Apple TV remains untested; no native development begins here.
 
 ## Independent review
 
@@ -56,7 +56,7 @@ The independent reviewer could not run because its session returned a usage-limi
 
 Application commit `a169ef18babaea8e3296fd7c8af71a42a0c45183` is published on main. [Pages run 37372529348](https://github.com/HaydenMay/Viewport/actions/runs/37372529348) was queued when checked. The user reported that GitHub Actions is down and explicitly instructed us not to wait. The live site still showed Prototype 1.5 at the last check. Deployment and live 1.6 verification therefore remain pending. No workflow or hosting configuration was changed. Local build evidence alone does not establish deployed correctness.
 
-Once Actions resumes and the site shows Prototype 1.6, verify the Big 6 controls, Paramount+/Peacock title actions, and opt-in diagnostics before running the physical-device checklist. Stop development pending those real-device results.
+Follow-up: the user now confirms the update loaded and reports successful Paramount+/Peacock title launches and fast loading. Prime and Peacock open webpages rather than native apps. The user subsequently explicitly confirmed Paramount+ native app opening. This is user-provided deployed/device evidence, not an independent workflow or browser regression recheck. No additional major feature work begins.
 
 ## Native checks still required
 

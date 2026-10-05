@@ -53,3 +53,7 @@ The provider's public AASA endpoints could not be inspected through the research
 4. Report the three outcomes and your OS version. Optional second pass: Mutant Mayhem (Paramount+ movie) and Parks and Recreation (Peacock season). Confirm one Netflix/Disney+/Hulu title still opens natively.
 
 Stop after these results. Native tvOS development, broader catalog imports, and other major features remain paused.
+
+## Follow-up device result — 2026-10-05
+
+After 1.6 loaded, the user reported successful, fast Paramount+ and Peacock title launches. Prime and Peacock explicitly remain browser launches. The same-tab Prime experiment did not establish native handoff. The user then explicitly confirmed Paramount+ opens in the native app; its iOS expectation is now `nativeExact` based on that report. The earlier research table documents the pre-test state; the compatibility matrix carries the latest observations. Preserve all working URLs and avoid another speculative route change.

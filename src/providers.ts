@@ -80,7 +80,7 @@ export const PROVIDERS: ProviderIntegration[] = [
     iosCapability: "webExact",
     iosEvidence: "user-reported",
     iosNotes:
-      "User confirms the correct web title, not native handoff. Direct same-tab HTTPS navigation is a testable handoff experiment; no verified custom scheme or alternate app route was found.",
+      "User retested the same-tab HTTPS route: the correct web title still opens, without native handoff. No verified alternate native route is known.",
   },
   {
     id: "paramount",
@@ -91,10 +91,10 @@ export const PROVIDERS: ProviderIntegration[] = [
     titlePath: /^\/(shows\/[^/]+|movies\/video\/[^/]+)\/?$/,
     contentId: /^\/(?:shows|movies\/video)\/([^/]+)/,
     navigation: "same-tab",
-    iosCapability: "webExact",
-    iosEvidence: "pending",
+    iosCapability: "nativeExact",
+    iosEvidence: "user-reported",
     iosNotes:
-      "Official full-series/movie pages checked in a browser. Native movie and series routing both require physical-device testing.",
+      "User confirms Paramount+ opens the selected title in its native iOS app. Individual title, movie/series paths, and app/OS versions still need records.",
   },
   {
     id: "peacock",
@@ -107,9 +107,9 @@ export const PROVIDERS: ProviderIntegration[] = [
     contentId: /^\/watch-online\/(?:tv|movies)\/[^/]+\/([^/]+)/,
     navigation: "same-tab",
     iosCapability: "webExact",
-    iosEvidence: "pending",
+    iosEvidence: "user-reported",
     iosNotes:
-      "Official title/season HTTPS pages checked. No exact native iOS route has been verified; use the same safe web destination until device results arrive.",
+      "User confirms the correct title opens quickly in the browser, not the installed Peacock app. Native title routing remains unverified; preserve the working web destination.",
   },
 ];
 
