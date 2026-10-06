@@ -191,7 +191,7 @@ test('one unexpected search envelope does not prevent evaluating later ratings a
   assert.equal(report.ratingStates.missing, 1);
   assert.equal(report.missing.usRating, 1);
   assert.deepEqual(report.responseDiagnostics, { 'remote-search:invalid-response:null': 1 });
-  assert.equal(report.requests.tvdb, 4);
+  assert.equal(report.requests.tvdb, 5);
   const output = formatReport(report);
   assert.ok(output.includes('remote-search:invalid-response:null'));
   for (const secret of ['secret-string', 'privateField', keys.tvdb, 'tt1000001']) assert.ok(!output.includes(secret));
@@ -229,4 +229,63 @@ test('explicit failure envelopes stay errors even when their search data is null
   assert.equal(report.completion, 'failed');
   assert.equal(report.matchStates.error, 2);
   assert.equal(report.matchStates.unresolved ?? 0, 0);
+});
+
+test('rating audit separates media types and limits trusted full-response checks to three per kind', async () => {
+  const client = createClients(keys, async input => {
+    const u = new URL(String(input));
+    if (u.pathname.endsWith('/login')) return json({ data: { token: 'token' } });
+    if (u.hostname === 'api.movieofthenight.com') {
+      const kind = u.searchParams.get('show_type')!;
+      return json({ shows: u.searchParams.get('catalogs') === 'netflix.subscription' ? Array.from({ length: 5 }, (_, i) => sourceShow(i + (kind === 'movie' ? 1 : 101), kind)) : [], hasMore: false });
+    }
+    if (u.pathname.includes('/search/remoteid/')) {
+      const id = Number(u.pathname.split('tt')[1]) - 1000000;
+      return json({ data: [{ [id > 100 ? 'series' : 'movie']: { id } }] });
+    }
+    const id = Number(u.pathname.split('/')[3]);
+    return json({ data: { id, remoteIds: [{ id: `tt${1000000 + id}`, sourceName: 'IMDB' }], contentRatings: u.searchParams.get('short') === 'false' ? [{ country: 'usa', name: id > 100 ? 'TV-14' : 'PG-13' }] : [] } });
+  });
+  const report = await evaluateCatalog(client, stamp);
+  assert.deepEqual(report.ratingAudit.fieldShapes, { 'array-empty': 10 });
+  assert.deepEqual(report.ratingAudit.byKind, { movie: { missing: 5 }, series: { missing: 5 } });
+  assert.deepEqual(report.ratingAudit.fullChecks, { attempted: 6, movie: 3, series: 3, improved: 6, unchanged: 0, failed: 0 });
+  // Investigation must not silently replace ratings with a small diagnostic sample.
+  assert.equal(report.ratingStates.missing, 10);
+  assert.equal(report.requests.tvdb, 27);
+});
+
+test('full-response audit rejects a different title without changing the trusted match', async () => {
+  let page = 0;
+  const client = createClients(keys, async input => {
+    const u = new URL(String(input));
+    if (u.pathname.endsWith('/login')) return json({ data: { token: 'token' } });
+    if (u.hostname === 'api.movieofthenight.com') return json({ shows: ++page === 1 ? [sourceShow(1, 'movie')] : [], hasMore: false });
+    if (u.pathname.includes('/search/remoteid/')) return json({ data: [{ movie: { id: 1 } }] });
+    return json({ data: { id: u.searchParams.get('short') === 'false' ? 999 : 1, remoteIds: [{ id: 'tt1000001', sourceName: 'IMDB' }], contentRatings: [] } });
+  });
+  const report = await evaluateCatalog(client, stamp);
+  assert.equal(report.matchStates.matched, 1);
+  assert.equal(report.ratingAudit.fullChecks.failed, 1);
+  assert.equal(report.ratingAudit.fullChecks.improved, 0);
+  assert.equal(report.ratingAudit.fullErrors['id-conflict'], 1);
+});
+
+test('rating audit distinguishes empty, absent, foreign, missing-country and wrong-media data safely', async () => {
+  let page = 0;
+  const client = createClients(keys, async input => {
+    const u = new URL(String(input));
+    if (u.pathname.endsWith('/login')) return json({ data: { token: 'token' } });
+    if (u.hostname === 'api.movieofthenight.com') return json({ shows: ++page === 1 ? Array.from({ length: 6 }, (_, i) => sourceShow(i + 1, 'movie')) : [], hasMore: false });
+    if (u.pathname.includes('/search/remoteid/')) return json({ data: [{ movie: { id: Number(u.pathname.split('tt')[1]) - 1000000 } }] });
+    const id = Number(u.pathname.split('/')[3]);
+    const ratings = [[], [{ country: 'gbr', name: 'secret-label' }], [{ id: 3, name: 'R' }], [{ country: 'usa', name: 'TV-14' }], null];
+    return json({ data: { id, remoteIds: [{ id: `tt${1000000 + id}`, sourceName: 'IMDB' }], ...(id === 6 ? {} : { contentRatings: ratings[id - 1] }) } });
+  });
+  const report = await evaluateCatalog(client, stamp);
+  assert.deepEqual(report.ratingAudit.fieldShapes, { 'array-empty': 1, 'array-populated': 3, null: 1, absent: 1 });
+  assert.deepEqual(report.ratingAudit.entryShapes, { 'country-other': 1, 'country-missing': 1, 'us:unrecognized': 1, 'us:other-media-label': 1 });
+  assert.deepEqual(report.ratingAudit.byKind.movie, { missing: 5, unrecognized: 1 });
+  assert.equal(report.ratingAudit.fullChecks.unchanged, 3);
+  assert.ok(!formatReport(report).includes('secret-label'));
 });

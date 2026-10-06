@@ -30,7 +30,7 @@ const yearValue = (value: unknown): number | null => {
 const genres = (value: unknown) => [...new Set(list(value).map(x => textValue(record(x).name)).filter((x): x is string => x !== null))];
 
 export function classifyRatings(input: unknown, kind: Kind): Ratings {
-  const labels = [...new Set(list(input).filter(x => ['us', 'usa'].includes(String(record(x).country).toLowerCase())).map(x => textValue(record(x).name)?.toUpperCase()).filter((x): x is string => !!x))];
+  const labels = [...new Set(list(input).filter(x => ['us', 'usa'].includes(String(record(x).country).trim().toLowerCase())).map(x => textValue(record(x).name)?.toUpperCase()).filter((x): x is string => !!x))];
   const levels: Record<string, AgeLevel> = kind === 'movie' ? { G: 0, PG: 1, 'PG-13': 2, R: 3, 'NC-17': 3 } : { 'TV-Y': 0, 'TV-G': 0, 'TV-Y7': 1, 'TV-Y7-FV': 1, 'TV-PG': 1, 'TV-14': 2, 'TV-MA': 3 };
   if (!labels.length) return { labels, state: 'missing', ageLevel: null };
   if (labels.length > 1) return { labels, state: 'conflict', ageLevel: null };

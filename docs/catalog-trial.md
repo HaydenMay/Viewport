@@ -22,7 +22,7 @@ The command reads environment variables; it does not automatically read `.env`. 
 - Target: 100 deduplicated titles, ideally 50 movies and 50 series. Sample each of the Big 6 before choosing titles, then use bounded pagination if needed. Exhausted catalogs can produce a smaller or differently balanced sample.
 - Region/language: US availability and English metadata. Offer coverage is distinct from launch capability.
 - Include base subscription offers only. Exclude rent, buy, free-only and channel/add-on offers; Prime's rental catalog and Hulu/Prime channel subscriptions do not become base subscription availability.
-- Hard per-run caps: **25 availability requests** and **260 TheTVDB requests**, counting login and retries. These caps are not estimated billable credits, guaranteed title counts, or guarantees of fitting an account's remaining monthly quota.
+- Hard per-run caps: **25 availability requests** and **260 TheTVDB requests**, counting login, retries and the rating audit. These caps are not estimated billable credits, guaranteed title counts, or guarantees of fitting an account's remaining monthly quota.
 - An upstream transient failure gets at most one retry. Authentication/quota failures are not retried. Repeated/missing cursors stop the affected pagination stream. HTTP calls time out after 20 seconds; the Actions job has a 15-minute limit.
 - A `budget` error means the local cap prevented another request; a `quota` error means the upstream service returned HTTP 429. The report shows actual attempted request counts and an illustrative number of equally sized trials within a fresh 1,000-request allowance. It is not an estimate for refreshing an entire production catalog.
 
@@ -50,6 +50,21 @@ A malformed per-title TheTVDB response is counted as an error and leaves that ti
 The report includes only endpoint families (`remote-search`, `movie-extended`, `series-extended`), fixed error categories and data types (`null`, `array`, `object`, `undefined`, etc.). It does not print response bodies, arbitrary status messages, title identifiers, URLs or credentials. This is enough to distinguish a missing/null search envelope from invalid extended metadata without publishing source data.
 
 The first live trial selected 100 titles in 12 availability calls, but assessment stopped after four trusted TheTVDB records because of one `invalid-response`. Its 99 missing-rating count included unassessed records and must not be interpreted as source rating coverage. The revised report separates these states. The second live run assessed 93 trusted records and identified seven HTTP-success remote searches with `data: null`. Such null results are now counted as `unresolved`, with no metadata or rating invented. They produce a `partial` evaluation rather than a schema failure; they do not prove those titles are absent from TheTVDB. Explicit failure/unknown status envelopes and missing or wrongly typed data still fail validation. No title-name guessing or extra API calls were added. Of the 93 assessed records, 68 lacked a populated US certification, 22 had recognized ratings, two had unrecognized ratings and one was explicitly unrated. Only 92/100 had descriptions. This sample does not support relying on TheTVDB alone for complete maturity coverage.
+
+## Maturity source audit
+
+The report now breaks rating states down by movie versus series, records whether `contentRatings` was absent, null, empty, populated or wrongly typed, and counts rating-entry categories. These distinguish foreign-only ratings, missing country identifiers and US labels that belong to the other media type. No arbitrary upstream labels, country names, title names, URLs or raw responses are printed. US country-code whitespace is normalized; foreign certifications are never treated as US equivalents.
+
+For up to **three movies and three series** with missing or unrecognized ratings, the same extended record is fetched with `short=false` and its ID/IMDb association checked again. This adds at most six requests before retries and uses the existing 260-request cap. `improved` means a full response has a recognized US rating where the shortened response did not. `unchanged` means it still has no recognized rating, even if its exact unknown state changed. Failed checks are reported separately and do not overwrite a trusted initial match. These checks are a small targeted investigation, not a representative coverage study; they do not change catalog ratings or the live app.
+
+The [official API specification](https://github.com/thetvdb/v4-api/blob/main/docs/swagger.yml) documents `contentRatings` as an array with string `country` and `name` fields. Its shortened movie response omits characters, artwork and trailers; its shortened series response omits characters and artwork. Ratings are not documented as omitted. The [official movie scraper](https://github.com/thetvdb/metadata.movies.thetvdb.com.v4.python/blob/main/metadata.movies.thetvdb.com.v4.python/resources/lib/movies.py) also selects US ratings using country code `usa`, which the importer already supported. These are reasons to suspect source coverage, not proof about the current live payload.
+
+Interpret the next run before adding another source:
+
+- Empty or foreign-only rating arrays, with no improvement in full responses: evidence of a source coverage gap in this sample.
+- Missing country fields or invalid types: investigate schema/reference-ID resolution before changing the maturity policy.
+- Recognized ratings recovered in full responses: investigate short-response behavior and change the ingestion request deliberately.
+- US labels from the other media type: keep the current conservative classification until the policy is decided. Do not equate TV and movie ratings silently.
 
 ## Launching, artwork and distribution
 

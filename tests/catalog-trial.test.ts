@@ -68,3 +68,8 @@ test('missing, unrated, unrecognized and conflicting maturity labels stay distin
   assert.equal(conflict.state, 'conflict');
   assert.equal(conflict.ageLevel, null);
 });
+
+test('US country code whitespace is normalized without treating foreign ratings as US ratings', () => {
+  assert.equal(classifyRatings([{ country: ' USA ', name: ' PG-13 ' }], 'movie').state, 'rated');
+  assert.equal(classifyRatings([{ country: ' GBR ', name: 'PG-13' }], 'movie').state, 'missing');
+});
