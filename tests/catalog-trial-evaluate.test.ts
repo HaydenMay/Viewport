@@ -196,3 +196,37 @@ test('one unexpected search envelope does not prevent evaluating later ratings a
   assert.ok(output.includes('remote-search:invalid-response:null'));
   for (const secret of ['secret-string', 'privateField', keys.tvdb, 'tt1000001']) assert.ok(!output.includes(secret));
 });
+
+test('null remote results remain unresolved and yield a partial evaluation, not a schema failure', async () => {
+  let page = 0;
+  const client = createClients(keys, async input => {
+    const u = new URL(String(input));
+    if (u.pathname.endsWith('/login')) return json({ data: { token: 'token' } });
+    if (u.hostname === 'api.movieofthenight.com') return json({ shows: ++page === 1 ? [sourceShow(1, 'movie'), sourceShow(2, 'movie')] : [], hasMore: false });
+    return u.pathname.endsWith('tt1000001') ? json({ status: 'success', data: null }) : json({ data: null });
+  });
+  const report = await evaluateCatalog(client, stamp);
+  assert.equal(report.completion, 'partial');
+  assert.equal(report.matchStates.unresolved, 2);
+  assert.equal(report.matchStates.unmatched ?? 0, 0);
+  assert.equal(report.matchStates.error ?? 0, 0);
+  assert.deepEqual(report.errors, {});
+  assert.equal(report.ratingStates['not-evaluated'], 2);
+  assert.equal(report.missing.usRating, 0);
+  assert.deepEqual(report.responseDiagnostics, { 'remote-search:empty-result:null': 2 });
+  assert.equal(report.requests.tvdb, 3);
+});
+
+test('explicit failure envelopes stay errors even when their search data is null or an array', async () => {
+  let page = 0;
+  const client = createClients(keys, async input => {
+    const u = new URL(String(input));
+    if (u.pathname.endsWith('/login')) return json({ data: { token: 'token' } });
+    if (u.hostname === 'api.movieofthenight.com') return json({ shows: ++page === 1 ? [sourceShow(1, 'movie'), sourceShow(2, 'movie')] : [], hasMore: false });
+    return json({ status: 'failure', data: u.pathname.endsWith('tt1000001') ? null : [] });
+  });
+  const report = await evaluateCatalog(client, stamp);
+  assert.equal(report.completion, 'failed');
+  assert.equal(report.matchStates.error, 2);
+  assert.equal(report.matchStates.unresolved ?? 0, 0);
+});

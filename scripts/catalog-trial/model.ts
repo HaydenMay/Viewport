@@ -10,7 +10,7 @@ export interface TrialTitle {
   sourceIds: { availability: string; imdb: string | null; tvdb: number | null };
   provenance: { name: 'availability' | 'tvdb' | null; year: 'availability' | 'tvdb' | null; genres: 'availability' | 'tvdb' | null; summary: 'tvdb' | null; ratings: 'tvdb' | null };
   ratings: Ratings;
-  matchStatus: 'pending' | 'matched' | 'unmatched' | 'ambiguous' | 'missing-id' | 'id-conflict' | 'error';
+  matchStatus: 'pending' | 'matched' | 'unresolved' | 'unmatched' | 'ambiguous' | 'missing-id' | 'id-conflict' | 'error';
 }
 export interface TrialOffer {
   titleId: string; providerId: ProviderId; region: 'US'; access: 'subscription';
