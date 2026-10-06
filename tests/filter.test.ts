@@ -109,7 +109,7 @@ test("maturity ceiling includes boundary and excludes adults", () => {
     ["a", "teen"],
   );
 });
-test("unknown maturity is excluded unless explicitly allowed", () => {
+test("unknown maturity is excluded under a limit even when a legacy preference allows it", () => {
   const unknown = fixture({ ageLevel: null, rating: "Unrated" });
   assert.equal(
     filterTitles([unknown], { ...defaultPreferences(), maxAgeLevel: 1 }).length,
@@ -121,7 +121,7 @@ test("unknown maturity is excluded unless explicitly allowed", () => {
       maxAgeLevel: 1,
       allowUnrated: true,
     }).length,
-    1,
+    0,
   );
 });
 test("content-topic controls compose without changing maturity", () => {
@@ -217,4 +217,21 @@ test("filtering does not mutate catalog order or preferences", () => {
   filterTitles(titles, preferences, "Ocean");
   assert.equal(JSON.stringify(titles), before);
   assert.equal(JSON.stringify(preferences), saved);
+});
+
+
+test('no maturity limit includes unknown ratings while explicit search retains hard limits', () => {
+  const unknown = fixture({ id: 'unknown', ageLevel: null, rating: 'Rating unavailable' });
+  assert.equal(filterTitles([unknown], { ...defaultPreferences(), maxAgeLevel: null }).length, 1);
+  assert.equal(filterTitles([unknown], { ...defaultPreferences(), maxAgeLevel: 2 }, 'Ocean').length, 0);
+  assert.equal(filterTitles([fixture({ ageLevel: 3 })], { ...defaultPreferences(), maxAgeLevel: 2 }, 'Ocean').length, 0);
+});
+
+test('explicit searches reveal content-hidden matches and rank title matches before descriptions', () => {
+  const hidden = fixture({ id: 'hidden', name: 'Alien', topics: ['horror'], ageLevel: 3 });
+  const description = fixture({ id: 'summary', name: 'Space Journey', summary: 'An alien visitor.' });
+  const prefs = { ...defaultPreferences(), maxAgeLevel: null };
+  assert.deepEqual(ids(filterTitles([description, hidden], prefs, 'ALI')), ['hidden', 'summary']);
+  assert.deepEqual(ids(filterTitles([hidden], prefs)), []);
+  assert.deepEqual(ids(filterTitles([hidden], { ...prefs, providerIds: [] }, 'Alien')), []);
 });

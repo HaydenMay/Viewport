@@ -5,7 +5,7 @@ import type {
   Preferences,
   Title,
 } from "./domain.ts";
-import { shouldReplaceArtwork } from "./filter.ts";
+import { hiddenByContentPreferences, shouldReplaceArtwork } from "./filter.ts";
 import { providerById } from "./providers.ts";
 
 export function escapeHtml(value: string): string {
@@ -27,7 +27,7 @@ export function launchDiagnostics(
   platform: LaunchPlatform,
 ): string {
   const fields = [
-    ["Title", `${title.name} (${title.year})`],
+    ["Title", `${title.name} (${title.year ?? "Year unavailable"})`],
     ["Provider", providerById(offer.providerId).name],
     [
       "Platform expectation",
@@ -35,7 +35,8 @@ export function launchDiagnostics(
     ],
     ["Launch URL", target.url ?? "None"],
     ["Provider content ID", target.providerContentId ?? "Not mapped"],
-    ["TMDB ID", "Not imported; prototype fixture"],
+    ["IMDb ID", title.metadata?.imdbId ?? "Not imported; prototype fixture"],
+    ["TheTVDB ID", String(title.metadata?.tvdbId ?? "Not imported")],
     ["Expected capability", target.expectedCapability],
     ["Evidence", target.evidence],
     ["Web fallback", target.fallbackUrl ?? "None"],
@@ -92,7 +93,7 @@ export function cover(
   preferences: Preferences,
   className = "",
 ): string {
-  const replacement = shouldReplaceArtwork(title, preferences);
+  const replacement = !title.art || shouldReplaceArtwork(title, preferences);
   const name = escapeHtml(title.name);
   return `<div class="cover ${className} ${replacement ? "cover-neutral" : ""}" style="--cover-a:${title.palette[0]};--cover-b:${title.palette[1]}">
     ${replacement ? '<div class="neutral-orbit"></div>' : `<img src="./artwork/${title.id}.svg" alt="" loading="lazy" width="600" height="900" />`}
@@ -102,24 +103,25 @@ export function cover(
   </div>`;
 }
 
-export function titleCard(title: Title, preferences: Preferences): string {
+export function titleCard(title: Title, preferences: Preferences, searching = false): string {
   const providers = title.providerIds.filter((id) =>
     preferences.providerIds.includes(id),
   );
   return `<button class="title-card" data-title="${title.id}" aria-label="View details for ${escapeHtml(title.name)}">
     ${cover(title, preferences)}
-    <span class="card-metadata"><span>${title.year} <span class="dot">·</span> ${title.rating}</span><span class="card-provider" style="color:${providerById(providers[0]).color}">${escapeHtml(providerById(providers[0]).name)}${providers.length > 1 ? " +1" : ""}</span></span>
+    ${searching && hiddenByContentPreferences(title, preferences) ? '<span class="preference-warning">Hidden by your content preferences</span>' : ""}
+    <span class="card-metadata"><span>${title.year ?? "Year unavailable"} <span class="dot">·</span> ${escapeHtml(title.rating)}</span><span class="card-provider" style="color:${providerById(providers[0]).color}">${escapeHtml(providerById(providers[0]).name)}${providers.length > 1 ? ` +${providers.length - 1}` : ""}</span></span>
   </button>`;
 }
 
 export function feature(title: Title, preferences: Preferences): string {
-  const replacement = shouldReplaceArtwork(title, preferences);
+  const replacement = !title.art || shouldReplaceArtwork(title, preferences);
   return `<article class="feature" style="--feature-a:${title.palette[0]}">
     <div class="feature-art ${replacement ? "feature-neutral" : ""}" aria-hidden="true">${replacement ? '<div class="feature-orbit"></div>' : `<img src="./artwork/${title.id}.svg" alt="" width="600" height="900" />`}</div>
     <div class="feature-copy">
       <span class="eyebrow">FROM YOUR CATALOG</span>
       <h2>${escapeHtml(title.name)}</h2>
-      <p class="feature-meta">${title.year}<span>·</span>${title.rating}<span>·</span>${title.duration}<span>·</span>${title.genres[0]}</p>
+      <p class="feature-meta">${title.year ?? "Year unavailable"}<span>·</span>${escapeHtml(title.rating)}<span>·</span>${escapeHtml(title.duration)}<span>·</span>${escapeHtml(title.genres[0] ?? "Genre unavailable")}</p>
       <p class="feature-summary">${escapeHtml(title.summary)}</p>
       <button class="button-primary" data-title="${title.id}">${icon("play")} Explore title</button>
     </div>
@@ -136,4 +138,4 @@ export function switchControl(
   return `<label class="switch-control"><span class="switch-copy"><span>${title}</span><small>${subtitle}</small></span><input type="checkbox" role="switch" data-preference="${key}" ${preferences[key] ? "checked" : ""} /><span class="switch-track" aria-hidden="true"></span></label>`;
 }
 
-export const maturityOptions = `<option value="3">All rated titles</option><option value="2">Up to PG-13 / TV-14</option><option value="1">Up to PG / TV-PG</option><option value="0">G / TV-G only</option>`;
+export const maturityOptions = `<option value="none">No maturity limit</option><option value="3">All rated titles</option><option value="2">Up to PG-13 / TV-14</option><option value="1">Up to PG / TV-PG</option><option value="0">G / TV-G only</option>`;

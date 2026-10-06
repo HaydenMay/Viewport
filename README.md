@@ -57,8 +57,14 @@ No accounts, payments, production backend, AI classification, commercial API sub
 
 ## Catalog evaluation
 
-A separate **Evaluate 100-title catalog** manual Actions workflow samples US Big 6 included-subscription titles using Movie of the Night and enriches metadata/maturity ratings using TheTVDB. It uses repository secrets, bounded requests and an aggregate-only report. It does not change the live 24-title catalog or provider launches, and ordinary browsing/deployment makes no third-party API calls. See [operation and limitations](docs/catalog-trial.md). TMDB is not the proposed long-term dependency. Real API coverage is unverified until the manual trial runs; posters and public catalog distribution rights remain separate questions.
+A separate **Evaluate 100-title catalog** manual Actions workflow samples US Big 6 included-subscription titles using Movie of the Night and enriches metadata/maturity ratings using TheTVDB. It uses repository secrets, bounded requests and an aggregate-only report. It does not change the live 24-title catalog or provider launches, and ordinary browsing/deployment makes no third-party API calls. See [operation and limitations](docs/catalog-trial.md). TMDB is not the proposed long-term dependency. The completed real trial found substantial maturity gaps; Wikidata can supplement seven missing movie ratings in that sample. Posters and public catalog distribution rights remain separate questions.
 
 ## Focused iOS handoff probe — 1.7
 
 Every normal Watch URL and navigation policy remains unchanged. `?debug=links` adds a Peacock **Try app link** action using the same title’s official `/watch/asset/…` destination, which matches its published iOS association. This is an unverified native candidate with the existing web link kept available. Prime’s current path already appears in its association; an alternate host led to an install page and was rejected. See [research and the short retest](docs/native-handoff-probe.md).
+
+## Catalog expansion preparation
+
+Maturity limits now exclude unknown ratings, while No maturity limit allows them. Explicit search may show content-hidden titles with a warning but respects maturity and service restrictions. New household defaults keep Prime and Peacock off; saved selections are preserved.
+
+The manual **Preview 300-title catalog** workflow reuses the ingestion pipeline and builds an app-ready snapshot in memory. It publishes counts only. No larger live catalog is shipped until source distribution terms are clarified. See [pipeline, refresh instructions and limitations](docs/catalog-expansion.md).

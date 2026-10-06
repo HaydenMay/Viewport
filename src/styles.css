@@ -1622,3 +1622,5 @@ dialog::backdrop {
   margin: 0.2rem 0 0;
   overflow-wrap: anywhere;
 }
+
+.preference-warning { display: block; padding: .55rem .7rem; font-size: .8rem; color: #e9ce94; background: #302a20; border-radius: .5rem; }

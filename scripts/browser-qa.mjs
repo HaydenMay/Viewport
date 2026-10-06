@@ -69,6 +69,13 @@ const waitCount = async (count) => {
 
 try {
   await page.goto(url, { waitUntil: "load" });
+  await waitCount(12);
+  assert.equal(await page.locator('[data-provider="prime"]').count(), 0);
+  assert.equal(await page.locator('[data-provider="peacock"]').count(), 0);
+  await page.getByRole("button", { name: "Preferences", exact: true }).click();
+  await page.locator('[data-service="prime"]').check();
+  await page.locator('[data-service="peacock"]').check();
+  await page.locator('[data-close="preferences-dialog"]').first().click();
   await waitCount(17);
   await page.screenshot({ path: `${output}/viewport-preview.png` });
   await page.setViewportSize({ width: 820, height: 1180 });
@@ -140,11 +147,11 @@ try {
   await page.locator("#search").fill("stranger");
   await waitCount(1);
   await page.locator('.quick-filters [data-preference="hideHorror"]').check();
+  await waitCount(1);
+  assert.match(await page.locator('.preference-warning').innerText(), /Hidden by your content preferences/);
+  await page.locator(".quick-filters [data-maturity]").selectOption("1");
   await waitCount(0);
-  assert.match(
-    await page.locator(".empty-state").innerText(),
-    /Nothing matches/,
-  );
+  await page.locator(".quick-filters [data-maturity]").selectOption("3");
   await page.locator("#search").fill("");
   await page.locator('.quick-filters [data-preference="hideSeasonal"]').check();
   await waitCount(17);
@@ -153,7 +160,7 @@ try {
   await page.locator(".quick-filters [data-maturity]").selectOption("3");
   await waitCount(17);
   results.push(
-    "Search never bypasses content rules; maturity boundary gives eleven PG-or-lower fixtures.",
+    "Explicit search reveals content-hidden titles with a warning, preserves maturity limits, and PG-or-lower gives eleven fixtures.",
   );
 
   assert.equal(await page.locator('[data-provider="max"]').count(), 0);
@@ -260,7 +267,7 @@ try {
 
   await page.evaluate(() => localStorage.clear());
   await page.reload({ waitUntil: "load" });
-  await waitCount(17);
+  await waitCount(12);
   for (const [name, width, height] of [
     ["desktop", 1440, 1000],
     ["ipad-landscape", 1180, 820],
@@ -337,6 +344,10 @@ try {
     viewport: { width: 390, height: 844 },
   });
   await debug.goto(url + "?debug=links", { waitUntil: "load" });
+  await debug.getByRole("button", { name: "Preferences", exact: true }).click();
+  await debug.locator('[data-service="prime"]').check();
+  await debug.locator('[data-service="peacock"]').check();
+  await debug.locator('[data-close="preferences-dialog"]').first().click();
   await debug.locator('.title-card[data-title="parks-and-rec"]').click();
   await debug.locator("#details-dialog[open]").waitFor();
   await debug.locator(".launch-diagnostics summary").click();
@@ -389,7 +400,7 @@ try {
     await blocked.locator("#save-status").innerText(),
     /could not save/,
   );
-  assert.equal(await blocked.locator(".title-card").count(), 17);
+  assert.equal(await blocked.locator(".title-card").count(), 12);
   await blocked.close();
   results.push(
     "Blocked browser storage remains usable and explains that saving failed.",

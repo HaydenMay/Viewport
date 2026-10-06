@@ -14,7 +14,8 @@
     "build": "npm run typecheck && vite build",
     "verify": "npm test && npm run build",
     "artwork": "node scripts/create-artwork.mjs",
-    "catalog:trial": "node scripts/catalog-trial/run.ts"
+    "catalog:trial": "node scripts/catalog-trial/run.ts",
+    "catalog:preview": "node scripts/catalog-trial/preview.ts"
   },
   "devDependencies": {
     "typescript": "5.9.3",

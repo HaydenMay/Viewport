@@ -78,7 +78,7 @@ Only aggregate diagnostics appear in public Actions logs and summaries. No sourc
 
 Check rating and description completeness, matched-ID percentage, Big 6 coverage, rejected URL shapes and actual request usage. A technically completed run is not proof of sufficient data quality. Decide whether to expand to 300–1,000 titles only after reviewing those results and resolving public catalog rights.
 
-The later app milestone must separately address ranked local search, content-hidden explicit-search matches with a preference warning, pagination/performance and unknown content policies. Hard parental maturity restrictions remain a product question. Prime/Peacock must be off by default in that integration; the current checked-in preference defaults still require that correction. No saved household preference migration happens in this trial.
+The later app milestone must separately address ranked local search, content-hidden explicit-search matches with a preference warning, pagination/performance and unknown content policies. Hard parental maturity restrictions remain a product question. Prime/Peacock are now off by default for new households; saved selections are preserved. See [catalog expansion](catalog-expansion.md) for the new maturity/search policy and 300-title preview. No saved household preference migration happens in this trial.
 
 ## Wikidata movie-rating evaluation
 

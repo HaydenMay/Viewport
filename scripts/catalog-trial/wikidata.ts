@@ -20,7 +20,7 @@ class LookupError extends Error {
   constructor(category: string) { super(category); this.category = category; }
 }
 
-export async function evaluateWikidata(records: TrialRecord[], fetcher: typeof fetch): Promise<WikidataReport> {
+export async function evaluateWikidata(records: TrialRecord[], fetcher: typeof fetch, options: { maxMovies?: number; onCandidate?: (titleId: string, rating: string, itemId: string) => void } = {}): Promise<WikidataReport> {
   const movies = records.filter(x => x.title.kind === 'movie');
   const report: WikidataReport = {
     status: 'complete', requests: 0, moviesTested: movies.length, seriesNotTested: records.filter(x => x.title.kind === 'series').length,
@@ -29,7 +29,7 @@ export async function evaluateWikidata(records: TrialRecord[], fetcher: typeof f
   const ids = [...new Set(movies.map(x => x.title.sourceIds.imdb).filter((x): x is string => !!x && /^tt\d+$/.test(x)))];
   const found = new Map<string, Candidate[]>();
   const failed = new Set<string>();
-  if (movies.length > 100) throw new LookupError('budget');
+  if (movies.length > (options.maxMovies ?? 100) || (options.maxMovies ?? 100) > 300) throw new LookupError('budget');
   for (let offset = 0; offset < ids.length; offset += 25) {
     const batch = ids.slice(offset, offset + 25);
     const query = `PREFIX wd: <http://www.wikidata.org/entity/>
@@ -52,7 +52,7 @@ SELECT DISTINCT ?imdb ?item ?rating ?qualified ?referenced WHERE {
   }
 } LIMIT 1001`;
     try {
-      report.requests++; // At most four requests: 100 IDs in batches of 25, no retries.
+      report.requests++; // Batches of 25, bounded by the trial/preview movie cap; no retries.
       let response: Response;
       try {
         response = await fetcher('https://query.wikidata.org/sparql', {
@@ -100,6 +100,7 @@ SELECT DISTINCT ?imdb ?item ?rating ?qualified ?referenced WHERE {
       else if (!mpa[ratings[0]]) state = 'unrecognized';
       else {
         state = 'rated';
+        options.onCandidate?.(title.id, mpa[ratings[0]], rows[0].item);
         const candidate = classifyRatings([{ country: 'usa', name: mpa[ratings[0]] }], 'movie');
         if (title.ratings.state === 'missing') report.fillsMissing++;
         else if (title.ratings.state === 'rated') report[candidate.labels[0] === title.ratings.labels[0] ? 'agreements' : 'disagreements']++;

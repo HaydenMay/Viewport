@@ -209,18 +209,18 @@ export class PrototypeLauncher implements ProviderLauncher {
       url: link.url,
       fallbackUrl: link.url,
       expectedCapability:
-        platform === "ios" ? provider.iosCapability : "webExact",
+        platform === "ios" && link.evidence !== "availability-api" ? provider.iosCapability : "webExact",
       fallbackCapability: "webExact",
       exactTitleResolved: true,
       providerContentId: url.pathname.match(provider.contentId)?.[1] ?? null,
       navigation: provider.navigation,
       evidence:
-        platform === "ios" && provider.iosEvidence === "user-reported"
+        link.evidence === "availability-api" ? "availability-api" : platform === "ios" && provider.iosEvidence === "user-reported"
           ? "user-reported-provider"
           : "official-web-page",
       requiresDeviceVerification: true,
       explanation:
-        platform === "ios"
+        link.evidence === "availability-api" ? "Availability source supplied this title URL. Its shape is accepted, but exact identity and native routing require a device test." : platform === "ios"
           ? provider.iosNotes
           : "Opens the checked provider title page. The provider and device decide app versus browser; sign-in, region, and plan restrictions may apply.",
       ...(appCandidate ? { appCandidate } : {}),

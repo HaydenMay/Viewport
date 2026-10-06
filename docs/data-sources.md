@@ -10,9 +10,9 @@ The Mandalorian and The Boys include hypothetical disturbing-promotional-art fla
 
 The metadata candidate is **TheTVDB**, with **Movie of the Night** providing US availability across the fixed Big 6. TMDB is not a long-term catalog dependency. No TMDB API requests are made, and an external IMDb/TMDB identifier returned by another source is not an integration with those APIs.
 
-The first step is the separate [100-title trial](catalog-trial.md): manual CI-only ingestion, ephemeral normalized title/offer records, bounded requests and aggregate diagnostics. Secrets remain in GitHub Actions. No title database or poster is published in this trial. Catalog metadata, availability and provider launching remain independent.
+The initial evaluation is the separate [100-title trial](catalog-trial.md): manual CI-only ingestion, ephemeral normalized title/offer records, bounded requests and aggregate diagnostics. Secrets remain in GitHub Actions. No title database or poster is published in this trial. Catalog metadata, availability and provider launching remain independent.
 
-After successful evaluation and project-specific distribution clearance, the proposed pipeline is periodic upstream updates → normalization with source IDs/provenance → versioned Viewport catalog → local browsing/search/filtering. The browser would read our snapshot without making live upstream requests. A paid API or production backend is not required merely to evaluate this approach; continued free operation depends on applicable tiers, quotas and permissions.
+After successful evaluation and project-specific distribution clearance, the [implemented preview pipeline](catalog-expansion.md) prepares periodic upstream updates → normalization with source IDs/provenance → versioned Viewport catalog → local browsing/search/filtering. The browser would read our snapshot without making live upstream requests. A paid API or production backend is not required merely to evaluate this approach; continued free operation depends on applicable tiers, quotas and permissions.
 
 ## Maturity and content
 

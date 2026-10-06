@@ -15,10 +15,10 @@ interface RatingAudit {
 export interface TrialReport {
   wikidata: WikidataReport | null;
   ratingAudit: RatingAudit;
-  version: 1; generatedAt: string; target: 100; selected: number;
+  version: 1; generatedAt: string; target: number; selected: number;
   completion: 'complete' | 'partial' | 'failed';
   kinds: { movie: number; series: number }; providers: Record<string, number>;
-  requests: { availability: number; tvdb: number }; duplicates: number; multipleProviders: number;
+  requests: { availability: number; tvdb: number }; requestCaps: { availability: number; tvdb: number }; duplicates: number; multipleProviders: number;
   missing: { name: number; year: number; summary: number; genres: number; usRating: number };
   matchStates: Record<string, number>; ratingStates: Record<string, number>; ratingLabels: Record<string, number>;
   links: { accepted: number; rejected: number; needsDeviceVerification: number };
@@ -38,15 +38,17 @@ function interleave(buckets: Bucket[]): TrialRecord[] {
   for (let index = 0; index < max; index++) for (const bucket of buckets) if (bucket.records[index]) output.push(bucket.records[index]);
   return output;
 }
-function select(records: TrialRecord[], relax = false): TrialRecord[] {
+function select(records: TrialRecord[], relax = false, target = 100): TrialRecord[] {
   const chosen: TrialRecord[] = [];
   const kinds = { movie: 0, series: 0 };
-  for (const item of records) if (chosen.length < 100 && kinds[item.title.kind] < 50) { chosen.push(item); kinds[item.title.kind]++; }
-  if (relax) for (const item of records) if (chosen.length < 100 && !chosen.some(x => x.title.id === item.title.id)) chosen.push(item);
+  for (const item of records) if (chosen.length < target && kinds[item.title.kind] < target / 2) { chosen.push(item); kinds[item.title.kind]++; }
+  if (relax) for (const item of records) if (chosen.length < target && !chosen.some(x => x.title.id === item.title.id)) chosen.push(item);
   return chosen;
 }
 
-export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: string, options: { wikidataFetcher?: typeof fetch } = {}): Promise<TrialReport> {
+export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: string, options: { wikidataFetcher?: typeof fetch; target?: 100 | 300; onRecords?: (records: TrialRecord[]) => void; onWikidataCandidate?: (titleId: string, rating: string, itemId: string) => void } = {}): Promise<TrialReport> {
+  const target = options.target ?? 100;
+  if (![100, 300].includes(target)) throw new Error("Invalid catalog target");
   const issues: Record<string, number> = {};
   const responseDiagnostics: Record<string, number> = {};
   const errors: TrialReport['errors'] = {};
@@ -64,8 +66,8 @@ export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: strin
   };
   const buckets: Bucket[] = PROVIDERS.flatMap(provider => (['movie', 'series'] as const).map(kind => ({ provider: provider.id, kind, cursor: null, seen: new Set<string>(), done: false, records: [] })));
   const chooseSample = (records: TrialRecord[]) => {
-    const relax = (['movie', 'series'] as const).some(kind => records.filter(x => x.title.kind === kind).length < 50 && buckets.filter(x => x.kind === kind).every(x => x.done));
-    return select(records, relax);
+    const relax = (['movie', 'series'] as const).some(kind => records.filter(x => x.title.kind === kind).length < target / 2 && buckets.filter(x => x.kind === kind).every(x => x.done));
+    return select(records, relax, target);
   };
   const fetchPage = async (bucket: Bucket) => {
     const params = new URLSearchParams({ country: 'us', catalogs: `${bucket.provider}.subscription`, show_type: bucket.kind, series_granularity: 'show', output_language: 'en' });
@@ -95,10 +97,10 @@ export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: strin
   if (authenticated) {
     // First sample every provider and media kind before selecting the bounded trial.
     for (const bucket of buckets) { if (clients.stopped.availability) break; await fetchPage(bucket); }
-    while (!clients.stopped.availability && chooseSample(mergeTitles(interleave(buckets))).length < 100 && buckets.some(x => !x.done)) {
+    while (!clients.stopped.availability && chooseSample(mergeTitles(interleave(buckets))).length < target && buckets.some(x => !x.done)) {
       for (const bucket of buckets) {
         if (!bucket.done) await fetchPage(bucket);
-        if (clients.stopped.availability || chooseSample(mergeTitles(interleave(buckets))).length === 100) break;
+        if (clients.stopped.availability || chooseSample(mergeTitles(interleave(buckets))).length === target) break;
       }
     }
   }
@@ -178,10 +180,10 @@ export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: strin
     }
   }
   const report: TrialReport = {
-    wikidata: options.wikidataFetcher ? await evaluateWikidata(selected, options.wikidataFetcher) : null, ratingAudit, version: 1, generatedAt: checkedAt, target: 100, selected: selected.length,
-    completion: fatal ? 'failed' : selected.length === 100 && !ratingAudit.fullChecks.failed && !selected.some(x => x.title.matchStatus === 'unresolved') && !Object.keys(errors).length && !Object.keys(issues).length ? 'complete' : 'partial',
+    wikidata: options.wikidataFetcher ? await evaluateWikidata(selected, options.wikidataFetcher, { maxMovies: target, onCandidate: options.onWikidataCandidate }) : null, ratingAudit, version: 1, generatedAt: checkedAt, target, selected: selected.length,
+    completion: fatal ? 'failed' : selected.length === target && !ratingAudit.fullChecks.failed && !selected.some(x => x.title.matchStatus === 'unresolved') && !Object.keys(errors).length && !Object.keys(issues).length ? 'complete' : 'partial',
     kinds: { movie: 0, series: 0 }, providers: Object.fromEntries(PROVIDERS.map(x => [x.id, 0])),
-    requests: { ...clients.requests }, duplicates: candidates.length - merged.length, multipleProviders: 0,
+    requests: { ...clients.requests }, requestCaps: { ...clients.caps }, duplicates: candidates.length - merged.length, multipleProviders: 0,
     missing: { name: 0, year: 0, summary: 0, genres: 0, usRating: 0 }, matchStates: {}, ratingStates: {}, ratingLabels: {},
     links: { accepted: 0, rejected: 0, needsDeviceVerification: 0 }, horrorGenre: 0,
     unknownContent: { scary: selected.length, seasonal: selected.length, violence: selected.length, sexual: selected.length, language: selected.length },
@@ -203,10 +205,11 @@ export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: strin
     for (const label of title.ratings.labels) increment(report.ratingLabels, knownLabels.has(label) ? label : 'unrecognized-label');
     for (const offer of offers) { report.links[offer.linkAccepted ? 'accepted' : 'rejected']++; report.links.needsDeviceVerification++; }
   }
+  options.onRecords?.(structuredClone(selected));
   return report;
 }
 
 export function formatReport(report: TrialReport): string {
   const rows = (counts: Record<string, number>) => Object.entries(counts).map(([key, value]) => `| ${key} | ${value} |`).join('\n') || '| none | 0 |';
-  return `# Viewport catalog trial\n\nStatus: **${report.completion}**. Selected **${report.selected}/${report.target}** titles (${report.kinds.movie} movies, ${report.kinds.series} series).\n\nThe live catalog is unchanged. No source title data or images are published. Accepted links are candidates requiring device verification.\n\n## API requests\n\n| Source | Requests | Hard cap |\n| --- | ---: | ---: |\n| Movie of the Night | ${report.requests.availability} | 25 |\n| TheTVDB | ${report.requests.tvdb} | 260 |\n\nEstimated trials within a fresh 1,000-request availability allowance: ${report.estimatedTrialsPer1000Requests ?? 'not measured'}. This is for this trial size, not a full catalog refresh; retries and earlier usage consume quota.\n\n## Provider coverage\n\n| Provider | Titles |\n| --- | ---: |\n${rows(report.providers)}\n\n## Identifier matching\n\nUnresolved means the remote-ID search returned null data, not a confirmed absent title. A run with unresolved matches is partial.\n\n| Result | Titles |\n| --- | ---: |\n${rows(report.matchStates)}\n\n## US maturity coverage\n\nNot-evaluated means no trusted TheTVDB record was assessed; it is not a missing certification. Missing US ratings count only assessed records.\n\n| State | Titles |\n| --- | ---: |\n${rows(report.ratingStates)}\n\n| Known label | Titles |\n| --- | ---: |\n${rows(report.ratingLabels)}\n\n## Rating source audit\n\nShort-response field shapes: ${JSON.stringify(report.ratingAudit.fieldShapes)}. Entry categories: ${JSON.stringify(report.ratingAudit.entryShapes)}.\n\nMovie rating states: ${JSON.stringify(report.ratingAudit.byKind.movie)}. Series rating states: ${JSON.stringify(report.ratingAudit.byKind.series)}.\n\nFull-response checks (maximum three per media kind): ${JSON.stringify(report.ratingAudit.fullChecks)}. Full-response states: ${JSON.stringify(report.ratingAudit.fullStates)}. Check errors: ${JSON.stringify(report.ratingAudit.fullErrors)}.\n\nThese targeted checks diagnose response differences; they do not replace catalog ratings or measure representative coverage. Improved means the full response supplied a recognized rating where the short response did not.\n\n## Missing metadata\n\nSummary counts include records that could not be enriched.\n\n| Field | Titles |\n| --- | ---: |\n${rows(report.missing)}\n\n## Wikidata movie-rating trial\n\n${report.wikidata ? JSON.stringify(report.wikidata) : 'Not requested.'}\n\nIMDb-ID matching only; US movie ratings from P1657 only. TV series are not tested. Statements with qualifiers other than a rating certificate ID, multiple items/ratings and unknown rating entities remain unresolved. Candidate references and disagreements are counted; no live ratings are replaced. A completed lookup is not complete rating coverage.\n\n## Other diagnostics\n\nDuplicate source records: ${report.duplicates}. Multiple-provider titles: ${report.multipleProviders}. Horror-genre titles: ${report.horrorGenre}.\n\nCandidate links: ${report.links.accepted} accepted by existing URL rules, ${report.links.rejected} rejected; all ${report.links.needsDeviceVerification} require physical-device testing.\n\nScary, seasonal, violence, sexual-content and language classification: unknown for all ${report.selected} titles. Lack of a tag is not a safety determination. Artwork: original placeholders only.\n\nDiscovery issues: ${JSON.stringify(report.discoveryIssues)}. API errors: ${JSON.stringify(report.errors)}.\n\nResponse diagnostics (endpoint family:error category:data shape only): ${JSON.stringify(report.responseDiagnostics)}.\n`;
+  return `# Viewport catalog trial\n\nStatus: **${report.completion}**. Selected **${report.selected}/${report.target}** titles (${report.kinds.movie} movies, ${report.kinds.series} series).\n\nThe live catalog is unchanged. No source title data or images are published. Accepted links are candidates requiring device verification.\n\n## API requests\n\n| Source | Requests | Hard cap |\n| --- | ---: | ---: |\n| Movie of the Night | ${report.requests.availability} | ${report.requestCaps.availability} |\n| TheTVDB | ${report.requests.tvdb} | ${report.requestCaps.tvdb} |\n\nEstimated trials within a fresh 1,000-request availability allowance: ${report.estimatedTrialsPer1000Requests ?? 'not measured'}. This is for this trial size, not a full catalog refresh; retries and earlier usage consume quota.\n\n## Provider coverage\n\n| Provider | Titles |\n| --- | ---: |\n${rows(report.providers)}\n\n## Identifier matching\n\nUnresolved means the remote-ID search returned null data, not a confirmed absent title. A run with unresolved matches is partial.\n\n| Result | Titles |\n| --- | ---: |\n${rows(report.matchStates)}\n\n## US maturity coverage\n\nNot-evaluated means no trusted TheTVDB record was assessed; it is not a missing certification. Missing US ratings count only assessed records.\n\n| State | Titles |\n| --- | ---: |\n${rows(report.ratingStates)}\n\n| Known label | Titles |\n| --- | ---: |\n${rows(report.ratingLabels)}\n\n## Rating source audit\n\nShort-response field shapes: ${JSON.stringify(report.ratingAudit.fieldShapes)}. Entry categories: ${JSON.stringify(report.ratingAudit.entryShapes)}.\n\nMovie rating states: ${JSON.stringify(report.ratingAudit.byKind.movie)}. Series rating states: ${JSON.stringify(report.ratingAudit.byKind.series)}.\n\nFull-response checks (maximum three per media kind): ${JSON.stringify(report.ratingAudit.fullChecks)}. Full-response states: ${JSON.stringify(report.ratingAudit.fullStates)}. Check errors: ${JSON.stringify(report.ratingAudit.fullErrors)}.\n\nThese targeted checks diagnose response differences; they do not replace catalog ratings or measure representative coverage. Improved means the full response supplied a recognized rating where the short response did not.\n\n## Missing metadata\n\nSummary counts include records that could not be enriched.\n\n| Field | Titles |\n| --- | ---: |\n${rows(report.missing)}\n\n## Wikidata movie-rating trial\n\n${report.wikidata ? JSON.stringify(report.wikidata) : 'Not requested.'}\n\nIMDb-ID matching only; US movie ratings from P1657 only. TV series are not tested. Statements with qualifiers other than a rating certificate ID, multiple items/ratings and unknown rating entities remain unresolved. Candidate references and disagreements are counted; no live ratings are replaced. A completed lookup is not complete rating coverage.\n\n## Other diagnostics\n\nDuplicate source records: ${report.duplicates}. Multiple-provider titles: ${report.multipleProviders}. Horror-genre titles: ${report.horrorGenre}.\n\nCandidate links: ${report.links.accepted} accepted by existing URL rules, ${report.links.rejected} rejected; all ${report.links.needsDeviceVerification} require physical-device testing.\n\nScary, seasonal, violence, sexual-content and language classification: unknown for all ${report.selected} titles. Lack of a tag is not a safety determination. Artwork: original placeholders only.\n\nDiscovery issues: ${JSON.stringify(report.discoveryIssues)}. API errors: ${JSON.stringify(report.errors)}.\n\nResponse diagnostics (endpoint family:error category:data shape only): ${JSON.stringify(report.responseDiagnostics)}.\n`;
 }

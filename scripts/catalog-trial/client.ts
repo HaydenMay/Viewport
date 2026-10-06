@@ -12,15 +12,18 @@ export class TrialError extends Error {
 }
 
 const bases = { availability: 'https://api.movieofthenight.com/v4', tvdb: 'https://api4.thetvdb.com/v4' };
-const caps = { availability: 25, tvdb: 260 };
+const profiles = { trial: { availability: 25, tvdb: 260 }, preview: { availability: 75, tvdb: 700 } };
+export type CatalogProfile = keyof typeof profiles;
 export class TrialHttpClient {
+  readonly caps: { availability: number; tvdb: number };
   readonly requests = { availability: 0, tvdb: 0 };
   readonly stopped: Partial<Record<SourceName, ErrorCategory>> = {};
   private keys: { tvdb: string; availability: string };
   private fetcher: typeof fetch;
   private token: string | null = null;
 
-  constructor(keys: { tvdb: string; availability: string }, fetcher: typeof fetch) {
+  constructor(keys: { tvdb: string; availability: string }, fetcher: typeof fetch, profile: CatalogProfile = 'trial') {
+    this.caps = { ...profiles[profile] };
     for (const source of ['availability', 'tvdb'] as const) if (!keys[source]?.trim()) throw new TrialError(source, 'missing-secret');
     this.keys = keys; this.fetcher = fetcher;
   }
@@ -50,7 +53,7 @@ export class TrialHttpClient {
     const url = this.destination(source, path);
     for (let attempt = 0; attempt < 2; attempt++) {
       if (this.stopped[source]) throw new TrialError(source, this.stopped[source]!);
-      if (this.requests[source] >= caps[source]) { this.stopped[source] = 'budget'; throw new TrialError(source, 'budget'); }
+      if (this.requests[source] >= this.caps[source]) { this.stopped[source] = 'budget'; throw new TrialError(source, 'budget'); }
       const headers = new Headers(init.headers);
       headers.set('Accept', 'application/json');
       if (source === 'availability') headers.set('X-API-Key', this.keys.availability);
@@ -78,6 +81,6 @@ export class TrialHttpClient {
   }
 }
 
-export function createClients(keys: { tvdb: string; availability: string }, fetcher: typeof fetch = fetch): TrialHttpClient {
-  return new TrialHttpClient(keys, fetcher);
+export function createClients(keys: { tvdb: string; availability: string }, fetcher: typeof fetch = fetch, profile: CatalogProfile = 'trial'): TrialHttpClient {
+  return new TrialHttpClient(keys, fetcher, profile);
 }

@@ -5,7 +5,7 @@ export interface TitlePageLink {
   providerId: ProviderId;
   url: string;
   checkedAt: string;
-  evidence: "official-title-page";
+  evidence: "official-title-page" | "availability-api";
   appCandidateUrl?: string;
 }
 

@@ -3,7 +3,7 @@ import type { Preferences } from "./domain.ts";
 export const PREFERENCE_KEY = "viewport.preferences.v1";
 export function defaultPreferences(): Preferences {
   return {
-    providerIds: ["disney", "hulu", "netflix", "prime", "peacock", "paramount"],
+    providerIds: ["disney", "hulu", "netflix", "paramount"],
     hideHorror: true,
     hideSeasonal: true,
     hideDisturbingArtwork: true,
@@ -51,7 +51,7 @@ export function parsePreferences(raw: string | null): Preferences {
         defaults.hideDisturbingArtwork,
       ),
       allowUnrated: bool("allowUnrated", defaults.allowUnrated),
-      maxAgeLevel: [0, 1, 2, 3].includes(p.maxAgeLevel as number)
+      maxAgeLevel: p.maxAgeLevel === null || [0, 1, 2, 3].includes(p.maxAgeLevel as number)
         ? (p.maxAgeLevel as Preferences["maxAgeLevel"])
         : defaults.maxAgeLevel,
       blockedTopics: Array.isArray(p.blockedTopics)

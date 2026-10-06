@@ -8,3 +8,4 @@ dist/
 qa/
 *.log
 catalog-trial-output/
+src/generated/

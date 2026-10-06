@@ -289,3 +289,22 @@ test('rating audit distinguishes empty, absent, foreign, missing-country and wro
   assert.equal(report.ratingAudit.fullChecks.unchanged, 3);
   assert.ok(!formatReport(report).includes('secret-label'));
 });
+
+test('catalog preview selects a bounded 300-title sample through the existing pipeline', async () => {
+  let nextId = 1;
+  let captured = 0;
+  const client = createClients(keys, async input => {
+    const u = new URL(String(input));
+    if (u.pathname.endsWith('/login')) return json({ data: { token: 'private-bearer' } });
+    if (u.hostname === 'api4.thetvdb.com') return json({ data: [] });
+    const shows = Array.from({ length: 20 }, () => sourceShow(nextId++, u.searchParams.get('show_type')!, u.searchParams.get('catalogs')!.split('.')[0]));
+    return json({ shows, hasMore: true, nextCursor: String(nextId) });
+  }, 'preview');
+  const report = await evaluateCatalog(client, stamp, { target: 300, onRecords: records => { captured = records.length; } });
+  assert.equal(report.selected, 300);
+  assert.equal(captured, 300);
+  assert.deepEqual(report.kinds, { movie: 150, series: 150 });
+  assert.ok(report.requests.availability <= 75);
+  assert.ok(report.requests.tvdb <= 700);
+  assert.ok(!formatReport(report).includes('Never publish'));
+});

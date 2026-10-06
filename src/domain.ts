@@ -16,7 +16,7 @@ export type SeasonalTopic = "halloween" | "christmas";
 export interface Title {
   id: string;
   name: string;
-  year: number;
+  year: number | null;
   kind: "Movie" | "Series";
   rating: string;
   ageLevel: AgeLevel | null;
@@ -29,13 +29,20 @@ export interface Title {
   artworkRisk: "neutral" | "disturbing" | "seasonal" | "unknown";
   art: string;
   palette: [string, string];
+  contentCoverage?: "genre-only";
+  metadata?: {
+    imdbId: string | null; tvdbId: number | null;
+    ratingState: "rated" | "unrated" | "missing" | "unrecognized" | "conflict";
+    ratingSource: "tvdb" | "wikidata" | null; wikidataId: string | null;
+    checkedAt: string;
+  };
 }
 export interface Preferences {
   providerIds: ProviderId[];
   hideHorror: boolean;
   hideSeasonal: boolean;
   hideDisturbingArtwork: boolean;
-  maxAgeLevel: AgeLevel;
+  maxAgeLevel: AgeLevel | null;
   allowUnrated: boolean;
   blockedTopics: ContentTopic[];
 }
@@ -47,7 +54,7 @@ export interface Offer {
   providerId: ProviderId;
   region: "US";
   access: "subscription";
-  provenance: "prototype";
+  provenance: "prototype" | "movie-of-the-night";
 }
 export interface AvailabilitySource {
   offersFor(titleId: string): Promise<Offer[]>;
@@ -66,7 +73,7 @@ export interface LaunchTarget {
   exactTitleResolved: boolean;
   providerContentId: string | null;
   navigation: "new-tab" | "same-tab";
-  evidence: "user-reported-provider" | "official-web-page" | "none";
+  evidence: "user-reported-provider" | "official-web-page" | "availability-api" | "none";
   requiresDeviceVerification: boolean;
   explanation: string;
   appCandidate?: {

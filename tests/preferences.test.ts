@@ -104,3 +104,10 @@ test("Peacock survives saved preferences while retired Max is removed", () => {
   );
   assert.deepEqual(result.providerIds, ["disney", "peacock"]);
 });
+
+
+test('new households default to four native providers and no maturity limit round-trips', () => {
+  assert.deepEqual(defaultPreferences().providerIds, ['disney', 'hulu', 'netflix', 'paramount']);
+  const desired = { ...defaultPreferences(), maxAgeLevel: null };
+  assert.deepEqual(parsePreferences(JSON.stringify({ version: 1, preferences: desired })), desired);
+});

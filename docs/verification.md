@@ -82,3 +82,13 @@ Application commit `4e7ad28983d2d9aa0149c415961a581736626788` deployed successfu
 - Real credentials/data coverage have not yet been tested. The only 100-title result so far is a synthetic mocked evaluation, not a claim about the provider catalogs. Live discovery still uses 24 fixtures.
 
 Independent read-only code review identified malformed TVDB envelopes and unnecessary unbalanced-sample pagination. Four reproducing tests failed before fixes and pass afterward; full verification passes 59 tests/build. A minor limitation remains: link rejection diagnostics are totals, without provider/path-family categories. Real API execution is still pending.
+
+## Catalog expansion preparation — 2026-10-06
+
+- `npm run verify`: 76 tests passed; strict TypeScript and production build passed. npm emits the existing non-fatal proxy configuration warning.
+- Added reproducing filter/default/search tests and a synthetic 300-title ingestion selection test before implementation. Snapshot tests verify unknown-state handling, rating disagreement, availability/link separation and preservation of checked fixture links.
+- Production browser QA at `/Viewport/` passes desktop, both iPad orientations, 390px/320px mobile, 200% text, saved/blocked storage and all 24 fixture title destinations. The QA script was updated for new default services and explicit-search behavior; obsolete count assertions initially failed and were corrected to the approved policy.
+- Focused browser checks confirm a horror title can appear with a search warning, a maturity limit still excludes it, and details repeat the warning. No page errors or horizontal overflow; screenshots visually inspected.
+- A temporary **synthetic** 300-title snapshot verified 60-card initial rendering, Show more, full-catalog partial search, unknown-rating labels, exclusion under a limit and persisted No maturity limit. It was removed before the release build. This is not a real 300-title ingestion result.
+- Real 300-title preview requires a manual workflow run with repository secrets. No real source data was published. Live catalog remains 24 fixtures; source distribution clarification is pending.
+- Final browser bundle: `index-ClKbXrgz.js`, `index-C4LcUMOx.css`. Pages workflow is unchanged and remains independent of API keys.

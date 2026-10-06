@@ -1,0 +1,31 @@
+name: Preview 300-title catalog
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: viewport-catalog-trial
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Verify app and trial tests before accessing credentials
+        run: npm run verify
+      - name: Preview normalized catalog without publishing source data
+        env:
+          TVDB_API_KEY: ${{ secrets.TVDB_API_KEY }}
+          STREAMING_AVAILABILITY_API_KEY: ${{ secrets.STREAMING_AVAILABILITY_API_KEY }}
+        run: npm run catalog:preview
