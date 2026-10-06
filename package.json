@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "verify": "npm test && npm run build",
-    "artwork": "node scripts/create-artwork.mjs"
+    "artwork": "node scripts/create-artwork.mjs",
+    "catalog:trial": "node scripts/catalog-trial/run.ts"
   },
   "devDependencies": {
     "typescript": "5.9.3",

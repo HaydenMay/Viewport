@@ -69,3 +69,16 @@ Follow [the physical-device probe](native-probe.md) and [six-provider matrix](de
 Opt-in mobile diagnostics expose the exact observed Peacock season candidate, pending-device label, same-tab test action, and original web fallback without overflow. Prime exposes no rejected app-host candidate and retains the original title fallback plus Apple Notes testing guidance. The candidate control was visually inspected in the mobile capture. No native handoff is claimed from desktop/browser checks.
 
 Application commit `4e7ad28983d2d9aa0149c415961a581736626788` deployed successfully in [Pages run 37383837597](https://github.com/HaydenMay/Viewport/actions/runs/37383837597); both build and deploy jobs concluded success. A live browser check showed Prototype 1.7, all six services, and 17 default titles. Despicable Me 2 diagnostics showed the exact `/watch/asset/…` candidate, original web action/fallback, user-reported `webExact`, and pending physical verification. Its live control was visually inspected and captured. These checks establish deployed web correctness, not native app handoff.
+
+
+## Catalog evaluation implementation — 2026-10-06
+
+- Baseline: 35 existing tests passed.
+- Added 24 importer tests covering subscription projection, matching, certifications, safe URLs, bounded auth/HTTP and end-to-end sampling/reporting. Each task's tests were written/run before the implementation.
+- `npm run verify`: 59 tests passed; strict TypeScript passed; Vite production build passed. The existing environment emits an npm proxy-configuration warning; it did not fail verification.
+- Missing-key CLI probe: exit 1 with a sanitized `missing-secret` error before any upstream request.
+- Manual workflow YAML checked for dispatch-only trigger, read-only permissions, finite timeout, verification before secret access and trial-step-only secret scope.
+- `git diff --check` passed; comparison with pre-trial commit `16cec4a` found no changes in `src/` or `.github/workflows/pages.yml`. Generated browser bundle remains `index-z1N0_keH.js` and `index-UBbJjgNJ.css`.
+- Real credentials/data coverage have not yet been tested. The only 100-title result so far is a synthetic mocked evaluation, not a claim about the provider catalogs. Live discovery still uses 24 fixtures.
+
+Independent read-only code review identified malformed TVDB envelopes and unnecessary unbalanced-sample pagination. Four reproducing tests failed before fixes and pass afterward; full verification passes 59 tests/build. A minor limitation remains: link rejection diagnostics are totals, without provider/path-family categories. Real API execution is still pending.

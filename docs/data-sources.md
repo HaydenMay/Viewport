@@ -6,35 +6,40 @@
 
 The Mandalorian and The Boys include hypothetical disturbing-promotional-art flags specifically to prove that allowed titles can retain a neutral cover. Wednesday and other examples demonstrate content filtering. All rendered SVG scenes are original and deliberately non-graphic; no official promotional image is fetched. The app does not claim TMDB/JustWatch attribution because it does not use their data yet.
 
-## Eventual architecture
+## Approved next data architecture
 
-1. **Metadata adapter:** Resolve a stable TMDB movie/TV ID with media type, titles, localized descriptions, genres, release dates, and region-specific certifications. Retain source IDs and provenance separately from Viewport's internal ID. Do not infer a horror exclusion solely from a rating.
-2. **Availability adapter:** Obtain country-specific offers, distinguishing included subscription, free, ad-supported, rent, buy, channels/add-ons, and plan-specific entitlement. Selecting Prime Video must not silently include every rentable movie. Preserve provider/content IDs, source, region, last checked time, expiry policy, and confidence.
-3. **Content annotation source:** Separate licensing-reviewed human/editorial content data from TMDB genres. Horror/scary themes, violence, sexuality, language, and holidays need source and review status. No AI classification is included in this milestone. Unknown classifications require a household-visible policy.
-4. **Artwork review source:** Review each actual poster/backdrop/promotional asset, with asset hash/ID, source rights, region/locale, risk tags, and review date. A safe title can still have unsafe art. Do not fetch an excluded remote asset into the browser before masking it. Render a neutral local fallback for unreviewed assets when required.
-5. **Launch adapter:** Resolve an offer into a platform-specific, provider-approved or physically verified title URL. Keep `provider-homepage`, `provider-title-page`, `native-title-detail`, and `native-playback` as distinct capability levels. Never promote a web success to native confidence. Record per-platform verification and its date/app version.
+The metadata candidate is **TheTVDB**, with **Movie of the Night** providing US availability across the fixed Big 6. TMDB is not a long-term catalog dependency. No TMDB API requests are made, and an external IMDb/TMDB identifier returned by another source is not an integration with those APIs.
 
-For an inexpensive next data milestone, use a deliberate, noncommercial TMDB import to generate an attributed static snapshot during a controlled build, with the API token in CI secrets rather than browser code. Review terms before storing/reusing any data or art. If public snapshot redistribution is not allowed by the applicable agreement, use a licensed access mechanism instead. No API calls or secret fields are in the current client bundle.
+The first step is the separate [100-title trial](catalog-trial.md): manual CI-only ingestion, ephemeral normalized title/offer records, bounded requests and aggregate diagnostics. Secrets remain in GitHub Actions. No title database or poster is published in this trial. Catalog metadata, availability and provider launching remain independent.
 
-The eventual server, if needed, can protect tokens and refresh/cache normalized records. It is outside this prototype. Static client preferences can continue to filter the normalized snapshot locally. Freshness/error states must distinguish unavailable data from no matching offers.
+After successful evaluation and project-specific distribution clearance, the proposed pipeline is periodic upstream updates → normalization with source IDs/provenance → versioned Viewport catalog → local browsing/search/filtering. The browser would read our snapshot without making live upstream requests. A paid API or production backend is not required merely to evaluate this approach; continued free operation depends on applicable tiers, quotas and permissions.
 
-## Important API distinctions
+## Maturity and content
 
-TMDB's developer API is free for noncommercial use with attribution; its commercial classification depends on a project's purpose of generating revenue. A commercial launch requires discussing the applicable license. TMDB requires its approved logo and attribution notice when its API/data are used. Check the latest agreement before integration.
+TheTVDB US movie/TV certifications are metadata, not guarantees of complete family guidance. The trial reports missing, explicitly unrated, unrecognized and conflicting ratings separately, and treats review scores as unrelated to maturity. It measures missing English descriptions and external-ID matching failures. Movie of the Night supplies region-specific included-subscription offers; rentals, purchases and channels/add-ons must remain distinct.
 
-TMDB's watch-provider endpoint is powered by JustWatch and gives availability by country and transaction type. Its documentation explicitly distinguishes that from full content deep links. JustWatch attribution is required for those availability results. The provided TMDB watch page must not be treated as a verified native-title URI.
+Horror genre can support a limited genre flag. Scary themes, seasonal content, violence, sexuality and language require an additional reviewed source or explicit unknown policy. Absence of metadata is not evidence of safety. No AI classification is authorized. The existing hand-authored content flags remain fixture-only until the larger catalog design addresses these gaps.
 
-Commercial availability/deep-link vendors can be evaluated later against the actual physical-device matrix, regional coverage, mapping quality, refresh cadence, contractual reuse rights, and price. No paid evaluation or subscription is authorized for this prototype.
+## Artwork and reuse rights
 
-## Primary references (checked 2026-10-05 UTC)
+Use the original neutral SVG artwork while evaluating data. TheTVDB's API license expressly excludes image-display rights. Movie of the Night's image URLs likewise do not by themselves establish third-party artwork permission. Displaying or caching posters requires the relevant rights.
 
-- [TMDB API FAQ, licensing and attribution](https://developer.themoviedb.org/docs/faq)
-- [TMDB movie watch providers, country data and JustWatch attribution](https://developer.themoviedb.org/reference/movie-watch-providers)
-- [TMDB TV watch providers](https://developer.themoviedb.org/reference/tv-series-watch-providers)
-- [Apple universal-link handling](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app)
+TheTVDB publishes a free commercial tier below $50,000 annual company/parent-company revenue with attribution. Its access is product-specific and its API conditions still apply. Movie of the Night's direct free tier currently includes 1,000 requests/month and commercial use. Local database/discovery workflows are documented, but the competing-product and data-distribution clauses must be resolved for the eventual public static catalog. No public source dump, automatic ingestion schedule or paid subscription is included in this evaluation.
 
-These references establish integration constraints, not validated support by any individual streaming app.
+## Refresh, storage and attribution
 
-## Current milestone boundary
+Run the manual trial through Actions or privately supplied process environment variables. There is no auto-refresh of the live app yet. The trial prints aggregate counts only; raw responses, source descriptions, offers and generated snapshots stay out of public git, Pages and Actions artifacts. Current browser storage contains household preferences only. The Pages build is independent of API keys and availability.
 
-Big 6 launch architecture and physical-device results take priority over further catalog growth. No metadata import, API purchase, or backend begins in this task. Existing metadata and simulated availability remain separate from the checked launch registry. A later TMDB/availability integration must preserve that separation and the exact-title admission rule.
+A future approved snapshot should keep each title's source IDs, field provenance, region/access, availability check time and expiry/freshness separately from provider/platform launch evidence. Incremental changes can reduce refresh costs; a stale or failed import must not overwrite a last known good catalog. Appropriate source attribution must accompany released metadata, rather than being assumed satisfied by developer documentation.
+
+## Primary references (checked 2026-10-06 UTC)
+
+- [TheTVDB API pricing and attribution](https://www.thetvdb.com/api-information)
+- [TheTVDB project/API terms and image rights](https://www.thetvdb.com/tos)
+- [TheTVDB v4 schema and caching/update guidance](https://github.com/thetvdb/v4-api)
+- [Movie of the Night local catalog/discovery guide](https://docs.movieofthenight.com/guide/shows)
+- [Subscription catalogs and pagination](https://docs.movieofthenight.com/resource/shows)
+- [Movie of the Night pricing](https://www.movieofthenight.com/about/api/pricing)
+- [Movie of the Night developer terms](https://developers.movieofthenight.com/terms-and-conditions)
+
+These establish integration constraints and documented fields, not measured data completeness or native provider handoff.

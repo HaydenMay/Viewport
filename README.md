@@ -48,11 +48,16 @@ Relative assets and native dialogs work on GitHub Pages without a client router.
 - [Provider compatibility](docs/provider-compatibility.md)
 - [Launch research and physical-device checklist](docs/provider-launch-research.md)
 - [Title URL evidence](docs/title-link-evidence.md)
-- [Data provenance and eventual TMDB architecture](docs/data-sources.md)
+- [Data provenance and catalog sources](docs/data-sources.md)
+- [100-title catalog trial](docs/catalog-trial.md)
 - [Catalog admission rules](docs/catalog-curation.md)
 - [Deferred native validation](docs/deep-link-validation.md)
 
 No accounts, payments, production backend, AI classification, commercial API subscriptions, or native tvOS development are included. Do not begin another major feature until the current device results are returned. No open-source license has been selected; third-party tools retain their licenses. Reusable source and original artwork exports are preserved.
+
+## Catalog evaluation
+
+A separate **Evaluate 100-title catalog** manual Actions workflow samples US Big 6 included-subscription titles using Movie of the Night and enriches metadata/maturity ratings using TheTVDB. It uses repository secrets, bounded requests and an aggregate-only report. It does not change the live 24-title catalog or provider launches, and ordinary browsing/deployment makes no third-party API calls. See [operation and limitations](docs/catalog-trial.md). TMDB is not the proposed long-term dependency. Real API coverage is unverified until the manual trial runs; posters and public catalog distribution rights remain separate questions.
 
 ## Focused iOS handoff probe — 1.7
 
