@@ -35,12 +35,21 @@ TheTVDB supplies English descriptions and US certifications where present. Unkno
 | Maturity state | Meaning |
 | --- | --- |
 | `rated` | One recognized US movie/TV certification appropriate to the media type |
-| `missing` | No populated US certification |
+| `missing` | A trusted TheTVDB record was assessed but had no populated US certification |
+| `not-evaluated` | No trusted TheTVDB record was assessed (for example, matching failed or a response was invalid) |
 | `unrated` | Explicit NR / Unrated / Not Rated label |
 | `unrecognized` | Populated US label not understood by the current media-specific mapping |
 | `conflict` | Multiple distinct US labels; no single age level selected |
 
 US movie and TV labels are handled separately; audience enjoyment scores are never maturity ratings. Unrecognized labels are counted without printing arbitrary upstream strings. Horror genre is counted, but scary/seasonal/violence/sexual-content/language classifications remain unknown. Absence of those tags does not mean safe. Series-level certificates may not capture episode or season variation.
+
+## Response failures and diagnostics
+
+A malformed per-title TheTVDB response is counted as an error and leaves that title unenriched, but does not stop assessment of unrelated titles. The run still fails if any schema error occurred; it never reports the affected record as a successful match. Login, authentication, quota and request-budget safeguards remain unchanged.
+
+The report includes only endpoint families (`remote-search`, `movie-extended`, `series-extended`), fixed error categories and data types (`null`, `array`, `object`, `undefined`, etc.). It does not print response bodies, arbitrary status messages, title identifiers, URLs or credentials. This is enough to distinguish a missing/null search envelope from invalid extended metadata without publishing source data.
+
+The first live trial selected 100 titles in 12 availability calls, but assessment stopped after four trusted TheTVDB records because of one `invalid-response`. Its 99 missing-rating count included unassessed records and must not be interpreted as source rating coverage. The revised report separates these states. The exact unexpected response shape is still unconfirmed; a fresh run is needed to identify it. Do not assume `data: null` is a valid empty search result without checking the observed envelope and source behavior.
 
 ## Launching, artwork and distribution
 

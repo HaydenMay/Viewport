@@ -14,6 +14,7 @@ export interface TrialReport {
   links: { accepted: number; rejected: number; needsDeviceVerification: number };
   horrorGenre: number; unknownContent: { scary: number; seasonal: number; violence: number; sexual: number; language: number };
   discoveryIssues: Record<string, number>;
+  responseDiagnostics: Record<string, number>;
   errors: Partial<Record<SourceName, Partial<Record<ErrorCategory, number>>>>;
   estimatedTrialsPer1000Requests: number | null;
 }
@@ -37,6 +38,7 @@ function select(records: TrialRecord[], relax = false): TrialRecord[] {
 
 export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: string): Promise<TrialReport> {
   const issues: Record<string, number> = {};
+  const responseDiagnostics: Record<string, number> = {};
   const errors: TrialReport['errors'] = {};
   let fatal = false;
   const error = (thrown: unknown, source: SourceName) => {
@@ -93,14 +95,21 @@ export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: strin
     const title = item.title;
     if (!title.sourceIds.imdb) { title.matchStatus = 'missing-id'; continue; }
     if (clients.stopped.tvdb) { title.matchStatus = 'error'; continue; }
+    let stage: 'remote-search' | 'movie-extended' | 'series-extended' = 'remote-search';
+    let dataShape = 'unavailable';
+    const shape = (value: unknown) => value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value;
     try {
       const searchResponse = record(await clients.request('tvdb', `/search/remoteid/${encodeURIComponent(title.sourceIds.imdb)}`));
+      dataShape = shape(searchResponse.data);
       if (!Array.isArray(searchResponse.data)) throw new TrialError('tvdb', 'invalid-response');
       const match = selectTvdbMatch(searchResponse, title.kind);
       title.matchStatus = match.status;
       if (match.id === null) continue;
       const plural = title.kind === 'movie' ? 'movies' : 'series';
+      stage = title.kind === 'movie' ? 'movie-extended' : 'series-extended';
+      dataShape = 'unavailable';
       const raw = await clients.request('tvdb', `/${plural}/${match.id}/extended?meta=translations&short=true`);
+      dataShape = shape(record(raw).data);
       const extended = record(record(raw).data);
       if (typeof extended.id !== 'number' || !Number.isSafeInteger(extended.id) || extended.id <= 0) throw new TrialError('tvdb', 'invalid-response');
       const metadata = normalizeTvdb(raw, title.sourceIds.imdb, title.kind);
@@ -114,7 +123,9 @@ export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: strin
     } catch (thrown) {
       const category = error(thrown, 'tvdb');
       title.matchStatus = category === 'not-found' ? 'unmatched' : 'error';
-      if (category === 'invalid-response') clients.stopped.tvdb = category;
+      // A bad title response must not prevent assessment of unrelated records.
+      // Auth/quota/budget guards remain in the HTTP client. Only fixed enums are reported.
+      increment(responseDiagnostics, `${stage}:${category}:${dataShape}`);
     }
   }
   const report: TrialReport = {
@@ -125,7 +136,7 @@ export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: strin
     missing: { name: 0, year: 0, summary: 0, genres: 0, usRating: 0 }, matchStates: {}, ratingStates: {}, ratingLabels: {},
     links: { accepted: 0, rejected: 0, needsDeviceVerification: 0 }, horrorGenre: 0,
     unknownContent: { scary: selected.length, seasonal: selected.length, violence: selected.length, sexual: selected.length, language: selected.length },
-    discoveryIssues: issues, errors,
+    discoveryIssues: issues, responseDiagnostics, errors,
     estimatedTrialsPer1000Requests: clients.requests.availability ? Math.floor(1000 / clients.requests.availability) : null,
   };
   for (const { title, offers } of selected) {
@@ -136,9 +147,10 @@ export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: strin
     if (title.year === null) report.missing.year++;
     if (!title.summary) report.missing.summary++;
     if (!title.genres.length) report.missing.genres++;
-    if (title.ratings.state === 'missing') report.missing.usRating++;
+    const ratingsEvaluated = title.provenance.ratings === 'tvdb';
+    if (ratingsEvaluated && title.ratings.state === 'missing') report.missing.usRating++;
     if (title.genres.some(x => x.toLowerCase() === 'horror')) report.horrorGenre++;
-    increment(report.matchStates, title.matchStatus); increment(report.ratingStates, title.ratings.state);
+    increment(report.matchStates, title.matchStatus); increment(report.ratingStates, ratingsEvaluated ? title.ratings.state : 'not-evaluated');
     for (const label of title.ratings.labels) increment(report.ratingLabels, knownLabels.has(label) ? label : 'unrecognized-label');
     for (const offer of offers) { report.links[offer.linkAccepted ? 'accepted' : 'rejected']++; report.links.needsDeviceVerification++; }
   }
@@ -147,5 +159,5 @@ export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: strin
 
 export function formatReport(report: TrialReport): string {
   const rows = (counts: Record<string, number>) => Object.entries(counts).map(([key, value]) => `| ${key} | ${value} |`).join('\n') || '| none | 0 |';
-  return `# Viewport catalog trial\n\nStatus: **${report.completion}**. Selected **${report.selected}/${report.target}** titles (${report.kinds.movie} movies, ${report.kinds.series} series).\n\nThe live catalog is unchanged. No source title data or images are published. Accepted links are candidates requiring device verification.\n\n## API requests\n\n| Source | Requests | Hard cap |\n| --- | ---: | ---: |\n| Movie of the Night | ${report.requests.availability} | 25 |\n| TheTVDB | ${report.requests.tvdb} | 260 |\n\nEstimated trials within a fresh 1,000-request availability allowance: ${report.estimatedTrialsPer1000Requests ?? 'not measured'}. This is for this trial size, not a full catalog refresh; retries and earlier usage consume quota.\n\n## Provider coverage\n\n| Provider | Titles |\n| --- | ---: |\n${rows(report.providers)}\n\n## Identifier matching\n\n| Result | Titles |\n| --- | ---: |\n${rows(report.matchStates)}\n\n## US maturity coverage\n\n| State | Titles |\n| --- | ---: |\n${rows(report.ratingStates)}\n\n| Known label | Titles |\n| --- | ---: |\n${rows(report.ratingLabels)}\n\n## Missing metadata\n\n| Field | Titles |\n| --- | ---: |\n${rows(report.missing)}\n\n## Other diagnostics\n\nDuplicate source records: ${report.duplicates}. Multiple-provider titles: ${report.multipleProviders}. Horror-genre titles: ${report.horrorGenre}.\n\nCandidate links: ${report.links.accepted} accepted by existing URL rules, ${report.links.rejected} rejected; all ${report.links.needsDeviceVerification} require physical-device testing.\n\nScary, seasonal, violence, sexual-content and language classification: unknown for all ${report.selected} titles. Lack of a tag is not a safety determination. Artwork: original placeholders only.\n\nDiscovery issues: ${JSON.stringify(report.discoveryIssues)}. API errors: ${JSON.stringify(report.errors)}.\n`;
+  return `# Viewport catalog trial\n\nStatus: **${report.completion}**. Selected **${report.selected}/${report.target}** titles (${report.kinds.movie} movies, ${report.kinds.series} series).\n\nThe live catalog is unchanged. No source title data or images are published. Accepted links are candidates requiring device verification.\n\n## API requests\n\n| Source | Requests | Hard cap |\n| --- | ---: | ---: |\n| Movie of the Night | ${report.requests.availability} | 25 |\n| TheTVDB | ${report.requests.tvdb} | 260 |\n\nEstimated trials within a fresh 1,000-request availability allowance: ${report.estimatedTrialsPer1000Requests ?? 'not measured'}. This is for this trial size, not a full catalog refresh; retries and earlier usage consume quota.\n\n## Provider coverage\n\n| Provider | Titles |\n| --- | ---: |\n${rows(report.providers)}\n\n## Identifier matching\n\n| Result | Titles |\n| --- | ---: |\n${rows(report.matchStates)}\n\n## US maturity coverage\n\nNot-evaluated means no trusted TheTVDB record was assessed; it is not a missing certification. Missing US ratings count only assessed records.\n\n| State | Titles |\n| --- | ---: |\n${rows(report.ratingStates)}\n\n| Known label | Titles |\n| --- | ---: |\n${rows(report.ratingLabels)}\n\n## Missing metadata\n\nSummary counts include records that could not be enriched.\n\n| Field | Titles |\n| --- | ---: |\n${rows(report.missing)}\n\n## Other diagnostics\n\nDuplicate source records: ${report.duplicates}. Multiple-provider titles: ${report.multipleProviders}. Horror-genre titles: ${report.horrorGenre}.\n\nCandidate links: ${report.links.accepted} accepted by existing URL rules, ${report.links.rejected} rejected; all ${report.links.needsDeviceVerification} require physical-device testing.\n\nScary, seasonal, violence, sexual-content and language classification: unknown for all ${report.selected} titles. Lack of a tag is not a safety determination. Artwork: original placeholders only.\n\nDiscovery issues: ${JSON.stringify(report.discoveryIssues)}. API errors: ${JSON.stringify(report.errors)}.\n\nResponse diagnostics (endpoint family:error category:data shape only): ${JSON.stringify(report.responseDiagnostics)}.\n`;
 }

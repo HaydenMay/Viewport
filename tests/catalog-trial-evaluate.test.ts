@@ -92,7 +92,8 @@ test('enrichment rejects conflicting identifiers and does not fabricate certific
   });
   const report = await evaluateCatalog(client, stamp);
   assert.equal(report.matchStates['id-conflict'], 2);
-  assert.equal(report.ratingStates.missing, 2);
+  assert.equal(report.ratingStates['not-evaluated'], 2);
+  assert.equal(report.missing.usRating, 0);
   assert.equal(report.missing.summary, 2);
 });
 
@@ -119,10 +120,10 @@ test('malformed TVDB search responses fail rather than claiming an unmatched com
   const report = await evaluateCatalog(client, stamp);
   assert.equal(report.selected, 100);
   assert.equal(report.completion, 'failed');
-  assert.equal(report.errors.tvdb?.['invalid-response'], 1);
+  assert.equal(report.errors.tvdb?.['invalid-response'], 100);
   assert.equal(report.matchStates.unmatched ?? 0, 0);
   assert.equal(report.matchStates.error, 100);
-  assert.equal(report.requests.tvdb, 2);
+  assert.equal(report.requests.tvdb, 101);
 });
 
 test('exhausted movie results allow 100 series without consuming additional pagination quota', async () => {
@@ -170,4 +171,28 @@ test('malformed extended metadata is a schema failure rather than an identifier 
   assert.equal(report.matchStates.error, 1);
   assert.equal(report.matchStates['id-conflict'] ?? 0, 0);
   assert.equal(report.errors.tvdb?.['invalid-response'], 1);
+});
+
+
+test('one unexpected search envelope does not prevent evaluating later ratings and emits only safe diagnostics', async () => {
+  let page = 0;
+  const client = createClients(keys, async input => {
+    const u = new URL(String(input));
+    if (u.pathname.endsWith('/login')) return json({ data: { token: 'token' } });
+    if (u.hostname === 'api.movieofthenight.com') return json({ shows: ++page === 1 ? [sourceShow(1, 'movie'), sourceShow(2, 'movie')] : [], hasMore: false });
+    if (u.pathname.includes('/search/remoteid/')) return u.pathname.endsWith('tt1000001') ? json({ status: 'secret-string', data: null, privateField: keys.tvdb }) : json({ data: [{ movie: { id: 2 } }] });
+    return json({ data: { id: 2, remoteIds: [{ id: 'tt1000002', sourceName: 'IMDB' }], contentRatings: [] } });
+  });
+  const report = await evaluateCatalog(client, stamp);
+  assert.equal(report.completion, 'failed');
+  assert.equal(report.matchStates.error, 1);
+  assert.equal(report.matchStates.matched, 1);
+  assert.equal(report.ratingStates['not-evaluated'], 1);
+  assert.equal(report.ratingStates.missing, 1);
+  assert.equal(report.missing.usRating, 1);
+  assert.deepEqual(report.responseDiagnostics, { 'remote-search:invalid-response:null': 1 });
+  assert.equal(report.requests.tvdb, 4);
+  const output = formatReport(report);
+  assert.ok(output.includes('remote-search:invalid-response:null'));
+  for (const secret of ['secret-string', 'privateField', keys.tvdb, 'tt1000001']) assert.ok(!output.includes(secret));
 });
