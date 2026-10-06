@@ -79,3 +79,17 @@ Only aggregate diagnostics appear in public Actions logs and summaries. No sourc
 Check rating and description completeness, matched-ID percentage, Big 6 coverage, rejected URL shapes and actual request usage. A technically completed run is not proof of sufficient data quality. Decide whether to expand to 300–1,000 titles only after reviewing those results and resolving public catalog rights.
 
 The later app milestone must separately address ranked local search, content-hidden explicit-search matches with a preference warning, pagination/performance and unknown content policies. Hard parental maturity restrictions remain a product question. Prime/Peacock must be off by default in that integration; the current checked-in preference defaults still require that correction. No saved household preference migration happens in this trial.
+
+## Wikidata movie-rating evaluation
+
+Every manual trial now also checks movie IMDb IDs against [Wikidata P345](https://www.wikidata.org/wiki/Property:P345), then reads [US MPA movie ratings, P1657](https://www.wikidata.org/wiki/Property:P1657). Wikidata's structured data is [CC0](https://www.wikidata.org/wiki/Wikidata:Licensing), permitting commercial reuse and storage without an API subscription. This does not grant rights to posters or text on linked websites. No new API key is needed.
+
+This is a bounded server-side evaluation, not a browser/runtime dependency: batches of 25 unique IMDb IDs, normally two queries for 50 movies, with a hard maximum of four queries for 100 movies. Calls are sequential, time out after 20 seconds, never retry, and stop on an endpoint error. The public query service has no availability guarantee; throttling or malformed responses are reported in the Wikidata section without discarding the separate TheTVDB results. No Wikidata title database or raw responses are published.
+
+Only unambiguous exact IMDb matches with a single recognized, non-deprecated MPA rating become candidates. G, PG, PG-13, R and NC-17 are mapped by verified Wikidata entity identifiers, not arbitrary labels. Certificate-number qualifiers ([P2676](https://www.wikidata.org/wiki/Property:P2676)) are allowed; every other qualifier requires review because it can restrict applicability to a version or date. Multiple items, conflicting ratings, unknown values and missing ratings stay unresolved. Preferred statements do not silently override conflicting non-deprecated statements.
+
+The summary reports potential fills of missing ratings, agreements/disagreements with existing recognized TheTVDB ratings, and whether candidates have reference statements. A reference's presence does **not** establish an authoritative source or accuracy. Existing unrated, unrecognized and conflicting ratings are not counted as fills; nothing replaces current ratings. Wikidata is community-maintained, so candidates need a provenance/quality policy before affecting parental restrictions.
+
+**TV series are not tested:** no suitable US TV rating property has been verified for this integration. Movie ratings must not stand in for TV ratings. The trial therefore measures whether Wikidata can supplement movie coverage, not whether it solves all maturity gaps.
+
+Run the existing manual workflow on `main` once and read the new **Wikidata movie-rating trial** section. `complete` means the queries completed, not that every movie has a rating. This evaluation makes no changes to the app, artwork, provider defaults or verified launch URLs.
