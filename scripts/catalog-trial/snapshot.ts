@@ -5,10 +5,12 @@ import { classifyRatings, mergeTitles } from './model.ts';
 import type { TrialRecord } from './model.ts';
 
 export interface WikiCandidate { rating: string; itemId: string }
-export function buildSnapshot(records: TrialRecord[], generatedAt: string, candidates: Map<string, WikiCandidate>): CatalogSnapshot {
+export function buildSnapshot(records: TrialRecord[], generatedAt: string, candidates: Map<string, WikiCandidate>, englishOnly = false): CatalogSnapshot {
   const snapshot: CatalogSnapshot = { version: 1, generatedAt, titles: [], offers: [], links: [] };
+  if(englishOnly) snapshot.languagePolicy = 'english-original';
   for (const { title, offers } of mergeTitles(records)) {
     if (!title.name) continue;
+    if(englishOnly && (title.originalLanguage !== 'en' || title.languageEvidence !== 'availability-query')) continue;
     let ratings = title.ratings;
     let source: 'tvdb' | 'wikidata' | null = title.provenance.ratings;
     const wiki = candidates.get(title.id);
@@ -28,7 +30,7 @@ export function buildSnapshot(records: TrialRecord[], generatedAt: string, candi
       providerIds: [...new Set(offers.map(x => x.providerId))],
       topics: title.genres.some(x => x.toLowerCase() === 'horror') ? ['horror'] : [], seasonal: [],
       contentCoverage: 'genre-only', artworkRisk: 'unknown', art: '', palette: ['#244255', '#799693'],
-      metadata: { imdbId: title.sourceIds.imdb, tvdbId: title.sourceIds.tvdb, ratingState: ratings.state, ratingSource: source,
+      metadata: { originalLanguage: title.originalLanguage ?? null, languageEvidence: title.languageEvidence ?? null, imdbId: title.sourceIds.imdb, tvdbId: title.sourceIds.tvdb, ratingState: ratings.state, ratingSource: source,
         wikidataId: source === 'wikidata' ? wiki!.itemId : null, checkedAt: generatedAt },
     };
     snapshot.titles.push(entry);

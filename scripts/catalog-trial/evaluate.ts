@@ -46,7 +46,7 @@ function select(records: TrialRecord[], relax = false, target = 100): TrialRecor
   return chosen;
 }
 
-export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: string, options: { wikidataFetcher?: typeof fetch; target?: 100 | 300; onRecords?: (records: TrialRecord[]) => void; onWikidataCandidate?: (titleId: string, rating: string, itemId: string) => void } = {}): Promise<TrialReport> {
+export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: string, options: { englishOnly?: boolean; wikidataFetcher?: typeof fetch; target?: 100 | 300; onRecords?: (records: TrialRecord[]) => void; onWikidataCandidate?: (titleId: string, rating: string, itemId: string) => void } = {}): Promise<TrialReport> {
   const target = options.target ?? 100;
   if (![100, 300].includes(target)) throw new Error("Invalid catalog target");
   const issues: Record<string, number> = {};
@@ -71,12 +71,13 @@ export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: strin
   };
   const fetchPage = async (bucket: Bucket) => {
     const params = new URLSearchParams({ country: 'us', catalogs: `${bucket.provider}.subscription`, show_type: bucket.kind, series_granularity: 'show', output_language: 'en' });
+    if(options.englishOnly) params.set('show_original_language','en');
     if (bucket.cursor) params.set('cursor', bucket.cursor);
     try {
       const response = record(await clients.request('availability', `/shows/search/filters?${params}`));
       if (!Array.isArray(response.shows) || typeof response.hasMore !== 'boolean' || response.shows.length > 20) throw new TrialError('availability', 'invalid-response');
       for (const raw of response.shows) {
-        const normalized = normalizeShow(raw, checkedAt);
+        const normalized = normalizeShow(raw, checkedAt, options.englishOnly ? 'en' : undefined);
         if (!normalized || normalized.title.kind !== bucket.kind) { increment(issues, 'invalid-show'); continue; }
         if (!normalized.offers.length) { increment(issues, 'no-subscription-offer'); continue; }
         bucket.records.push(normalized);
@@ -139,7 +140,8 @@ export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: strin
       const metadata = normalizeTvdb(raw, title.sourceIds.imdb, title.kind);
       if (!metadata || metadata.id !== match.id) { title.matchStatus = 'id-conflict'; continue; }
       title.sourceIds.tvdb = metadata.id;
-      if (metadata.name) { title.name = metadata.name; title.provenance.name = 'tvdb'; }
+      // Preserve the availability source's requested English display title.
+      if (!title.name && metadata.name) { title.name = metadata.name; title.provenance.name = 'tvdb'; }
       if (metadata.year !== null) { title.year = metadata.year; title.provenance.year = 'tvdb'; }
       if (metadata.genres.length) { title.genres = metadata.genres; title.provenance.genres = 'tvdb'; }
       title.summary = metadata.summary; title.provenance.summary = metadata.summary ? 'tvdb' : null;

@@ -25,13 +25,14 @@ try {
   let records: TrialRecord[] = [];
   const stamp = new Date().toISOString();
   const report = await evaluateCatalog(clients, stamp, {
-    target: 300, wikidataFetcher: fetch,
+    target: 300, englishOnly: true, wikidataFetcher: fetch,
     onRecords: selected => { records = selected; },
     onWikidataCandidate: (id, rating, itemId) => candidates.set(id, {rating,itemId}),
   });
   let summary = formatReport(report).replace('# Viewport catalog trial', '# Viewport 300-title catalog preview');
   if (report.completion !== 'failed' && records.length) {
-    const snapshot = buildSnapshot(records, stamp, candidates);
+    const snapshot = buildSnapshot(records, stamp, candidates, true);
+    summary += '\nLanguage policy: English original language, confirmed by the documented availability-query filter; this does not certify provider audio tracks. Unknown-language records are excluded.\n';
     const source = new SnapshotSource(snapshot);
     const titles = await loadLaunchableCatalog(source, source, new PrototypeLauncher(snapshot.links));
     const prefs = defaultPreferences();

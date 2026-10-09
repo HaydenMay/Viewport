@@ -31,6 +31,8 @@ export interface Title {
   palette: [string, string];
   contentCoverage?: "genre-only";
   metadata?: {
+    originalLanguage?: 'en' | null;
+    languageEvidence?: 'availability-query' | null;
     imdbId: string | null; tvdbId: number | null;
     ratingState: "rated" | "unrated" | "missing" | "unrecognized" | "conflict";
     ratingSource: "tvdb" | "wikidata" | null; wikidataId: string | null;

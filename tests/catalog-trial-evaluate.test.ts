@@ -308,3 +308,15 @@ test('catalog preview selects a bounded 300-title sample through the existing pi
   assert.ok(report.requests.tvdb <= 700);
   assert.ok(!formatReport(report).includes('Never publish'));
 });
+
+test('English catalog queries filter original language on every provider page and retain query evidence',async()=>{
+ const queries:URL[]=[];let records:import('../scripts/catalog-trial/model.ts').TrialRecord[]=[];
+ const client=createClients(keys,async input=>{
+  const u=new URL(String(input));if(u.pathname.endsWith('/login'))return json({data:{token:'private-bearer'}});
+  queries.push(u);const id=queries.length;
+  return json({shows:[sourceShow(id,u.searchParams.get('show_type')!,'netflix',false)],hasMore:false});
+ });
+ await evaluateCatalog(client,stamp,{englishOnly:true,onRecords:value=>records=value});
+ assert.equal(queries.length,12);assert.ok(queries.every(u=>u.searchParams.get('show_original_language')==='en'&&u.searchParams.get('output_language')==='en'));
+ assert.equal(records.length,12);assert.ok(records.every(r=>r.title.originalLanguage==='en'&&r.title.languageEvidence==='availability-query'));
+});

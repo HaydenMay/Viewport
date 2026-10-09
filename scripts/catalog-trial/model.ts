@@ -7,6 +7,8 @@ export interface Ratings { labels: string[]; state: RatingState; ageLevel: AgeLe
 export interface TrialTitle {
   id: string; kind: Kind; name: string | null; year: number | null; summary: string | null;
   genres: string[];
+  originalLanguage?: 'en' | null;
+  languageEvidence?: 'availability-query' | null;
   sourceIds: { availability: string; imdb: string | null; tvdb: number | null };
   provenance: { name: 'availability' | 'tvdb' | null; year: 'availability' | 'tvdb' | null; genres: 'availability' | 'tvdb' | null; summary: 'tvdb' | null; ratings: 'tvdb' | null };
   ratings: Ratings;
@@ -48,7 +50,7 @@ function candidateUrl(value: unknown, providerId: ProviderId): string | null {
   } catch { return null; }
 }
 
-export function normalizeShow(input: unknown, checkedAt: string): TrialRecord | null {
+export function normalizeShow(input: unknown, checkedAt: string, languageFilter?: 'en'): TrialRecord | null {
   const raw = record(input);
   const sourceId = textValue(raw.id);
   if (!sourceId || !/^[a-zA-Z0-9_-]{1,100}$/.test(sourceId) || !['movie', 'series'].includes(String(raw.showType))) return null;
@@ -60,6 +62,8 @@ export function normalizeShow(input: unknown, checkedAt: string): TrialRecord | 
   const genreNames = genres(raw.genres);
   const title: TrialTitle = {
     id, kind, name, year, summary: null, genres: genreNames,
+    originalLanguage: languageFilter ?? null,
+    languageEvidence: languageFilter ? 'availability-query' : null,
     sourceIds: { availability: sourceId, imdb: imdb && /^tt\d+$/.test(imdb) ? imdb : null, tvdb: null },
     provenance: { name: name ? 'availability' : null, year: year === null ? null : 'availability', genres: genreNames.length ? 'availability' : null, summary: null, ratings: null },
     ratings: classifyRatings([], kind), matchStatus: 'pending',
