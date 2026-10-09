@@ -4,7 +4,7 @@
 
 A selected maturity limit (including All rated titles) excludes missing, explicitly unrated, unrecognized and conflicting ratings. No maturity limit allows them, labeled Rating unavailable. The legacy allowUnrated preference remains readable but cannot bypass a limit. Existing saved service choices are preserved; new households default to Netflix, Disney+, Hulu and Paramount+, with Prime/Peacock off.
 
-Explicit search retains service and maturity restrictions but can reveal titles hidden by horror, scary, seasonal or other content preferences. Those cards and details explain that they are normally hidden. Search is case/diacritic insensitive, accepts partial matches and ranks exact title, title prefix, title substring in that order. Search matches title names only; genres and descriptions do not create matches. Home keeps passive filters. Only 60 cards initially render; Show more adds another batch. Search still examines the entire loaded dataset.
+Explicit search retains service and maturity restrictions but can reveal titles hidden by horror, scary, seasonal or other content preferences. Those cards and details explain that they are normally hidden. Search is case/diacritic insensitive, accepts partial matches and ranks exact title, title prefix, title substring in that order. A one-character query matches title prefixes only; queries of two or more characters also match substrings. Search matches title names only; genres and descriptions do not create matches. Home keeps passive filters. Only 60 cards initially render; Show more adds another batch. Search still examines the entire loaded dataset.
 
 ## Repeatable ingestion preview
 

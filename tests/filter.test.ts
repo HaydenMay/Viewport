@@ -259,9 +259,10 @@ test('filter explanations partition scoped matching titles without exposing matu
   assert.ok(!JSON.stringify(searched).includes('Adult'));
 });
 
- test('single letters match names only and exact/start/contains ranking is consistent', async () => {
+ test('single letters match title prefixes only; longer queries rank exact/start/contains', async () => {
  const titles=[fixture({id:'contains',name:'The Bear'}),fixture({id:'metadata',name:'Ocean',genres:['Biography'],summary:'B movie'}),fixture({id:'starts',name:'Bear Country'}),fixture({id:'exact',name:'Bear'})];
- assert.deepEqual(ids(filterTitles(titles,defaultPreferences(),' B ')),['exact','starts','contains']);
+ assert.deepEqual(ids(filterTitles(titles,defaultPreferences(),' B ')),['exact','starts']);
+ assert.deepEqual(ids(filterTitles(titles,defaultPreferences(),'be')),['exact','starts','contains']);
  assert.deepEqual(ids(filterTitles(titles,defaultPreferences(),'BEAR')),['exact','starts','contains']);
- const {explainFiltering}=await import('../src/filter.ts');assert.equal(explainFiltering(titles,defaultPreferences(),'B').matching,3);
+ const {explainFiltering}=await import('../src/filter.ts');assert.equal(explainFiltering(titles,defaultPreferences(),'B').matching,2);
  });

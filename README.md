@@ -79,4 +79,4 @@ Results now explain why titles are hidden, and maturity-blocked searches have a 
 
 ### Catalog QA improvements
 
-Search now matches title names only, including single-letter and partial queries, ordered by exact title, prefix, then substring. Content warnings and maturity/provider restrictions remain unchanged. Original abstract SVG fallback covers use genre palettes and stable title-ID variations, with no per-title asset work or extra requests. Mobile headings wrap, the wordmark fits enlarged text, and the search input avoids iPhone focus zoom. Responsive QA includes active searches and 200% text at 320–1440px widths.
+Search now matches title names only, with one-character prefix matching and longer partial queries, ordered by exact title, prefix, then substring. Content warnings and maturity/provider restrictions remain unchanged. Original abstract SVG fallback covers use genre palettes and stable title-ID variations, with no per-title asset work or extra requests. Mobile headings wrap, the wordmark fits enlarged text, and the search input avoids iPhone focus zoom. Responsive QA includes active searches and 200% text at 320–1440px widths.
