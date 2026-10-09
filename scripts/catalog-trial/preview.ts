@@ -1,4 +1,4 @@
-import { appendFile } from 'node:fs/promises';
+import { appendFile, readFile, mkdir, writeFile } from 'node:fs/promises';
 import { createClients, TrialError } from './client.ts';
 import { evaluateCatalog, formatReport } from './evaluate.ts';
 import { buildSnapshot } from './snapshot.ts';
@@ -11,11 +11,15 @@ import { filterTitles } from '../../src/filter.ts';
 import { defaultPreferences } from '../../src/preferences.ts';
 import { fileURLToPath } from 'node:url';
 import { requireLocalEnvironment, writeLocalSnapshot } from './local-snapshot.ts';
+import { encryptSnapshot } from './encrypted-snapshot.ts';
 
 // CI remains aggregate-only. Local export is explicitly requested and ignored by git.
 try {
   const local = process.argv.includes('--local');
+  const encrypted = process.argv.includes('--encrypted');
+  if(local && encrypted) throw new Error('Choose one export mode');
   if (local) requireLocalEnvironment(process.env);
+  const publicKey = encrypted ? await readFile(new URL('../../config/private-preview-public.pem',import.meta.url),'utf8') : null;
   const clients = createClients({tvdb: process.env.TVDB_API_KEY ?? '', availability: process.env.STREAMING_AVAILABILITY_API_KEY ?? ''}, fetch, 'preview');
   const candidates = new Map<string, WikiCandidate>();
   let records: TrialRecord[] = [];
@@ -41,6 +45,12 @@ try {
       noMaturityLimit: filterTitles(titles,{...prefs,maxAgeLevel:null}).length,
     };
     if (local) await writeLocalSnapshot(fileURLToPath(new URL('../../src/generated/catalog.json', import.meta.url)), snapshot);
+    if(publicKey) {
+      const envelope=encryptSnapshot(snapshot,publicKey);
+      await mkdir('catalog-trial-output',{recursive:true});
+      await writeFile('catalog-trial-output/catalog.encrypted.json',JSON.stringify(envelope),{mode:0o600});
+      summary += '\nPrivate transfer: an encrypted snapshot was generated. No plaintext title records are written to disk or uploaded. Only the private preview operator holds the decryption key.\n';
+    }
     summary += `\n## App-ready snapshot preview\n\n${JSON.stringify(counts)}\n\n${local ? 'Local snapshot saved to src/generated/catalog.json. Run npm run dev:catalog. This file is ignored by git.' : 'Normalized only in memory.'} No source records, provider URL database or images are uploaded or published. Unknown ratings are excluded under every maturity limit. Candidate links still need device verification.\n`;
   }
   process.stdout.write(summary);
