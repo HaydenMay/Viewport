@@ -9,9 +9,13 @@ import { loadLaunchableCatalog } from '../../src/discovery.ts';
 import { PrototypeLauncher } from '../../src/providers.ts';
 import { filterTitles } from '../../src/filter.ts';
 import { defaultPreferences } from '../../src/preferences.ts';
+import { fileURLToPath } from 'node:url';
+import { requireLocalEnvironment, writeLocalSnapshot } from './local-snapshot.ts';
 
-// Deliberately evaluates only. Public source-data export is not cleared yet.
+// CI remains aggregate-only. Local export is explicitly requested and ignored by git.
 try {
+  const local = process.argv.includes('--local');
+  if (local) requireLocalEnvironment(process.env);
   const clients = createClients({tvdb: process.env.TVDB_API_KEY ?? '', availability: process.env.STREAMING_AVAILABILITY_API_KEY ?? ''}, fetch, 'preview');
   const candidates = new Map<string, WikiCandidate>();
   let records: TrialRecord[] = [];
@@ -36,7 +40,8 @@ try {
       upToPG: filterTitles(titles,{...prefs,maxAgeLevel:1}).length,
       noMaturityLimit: filterTitles(titles,{...prefs,maxAgeLevel:null}).length,
     };
-    summary += `\n## App-ready snapshot preview\n\n${JSON.stringify(counts)}\n\nNormalized only in memory. No source records, provider URL database or images are uploaded or published. Unknown ratings are excluded under every maturity limit. Candidate links still need device verification.\n`;
+    if (local) await writeLocalSnapshot(fileURLToPath(new URL('../../src/generated/catalog.json', import.meta.url)), snapshot);
+    summary += `\n## App-ready snapshot preview\n\n${JSON.stringify(counts)}\n\n${local ? 'Local snapshot saved to src/generated/catalog.json. Run npm run dev:catalog. This file is ignored by git.' : 'Normalized only in memory.'} No source records, provider URL database or images are uploaded or published. Unknown ratings are excluded under every maturity limit. Candidate links still need device verification.\n`;
   }
   process.stdout.write(summary);
   if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, summary);

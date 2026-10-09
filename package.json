@@ -15,7 +15,9 @@
     "verify": "npm test && npm run build",
     "artwork": "node scripts/create-artwork.mjs",
     "catalog:trial": "node scripts/catalog-trial/run.ts",
-    "catalog:preview": "node scripts/catalog-trial/preview.ts"
+    "catalog:preview": "node scripts/catalog-trial/preview.ts",
+    "catalog:local": "node scripts/catalog-trial/preview.ts --local",
+    "dev:catalog": "vite --mode apiPreview --host 127.0.0.1"
   },
   "devDependencies": {
     "typescript": "5.9.3",

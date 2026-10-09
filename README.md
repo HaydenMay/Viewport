@@ -72,3 +72,7 @@ The manual **Preview 300-title catalog** workflow reuses the ingestion pipeline 
 ## Discovery feedback
 
 Results now explain why titles are hidden, and maturity-blocked searches have a distinct empty state from no matches. Imported availability check dates are preserved; older checks carry a freshness notice. See [validation and the short iPhone checklist](docs/discovery-validation.md).
+
+## Local API catalog testing
+
+`npm run catalog:local` generates an ignored, private snapshot targeting 300 titles; `npm run dev:catalog` loads it on loopback only. Public catalog approval defaults to false, and normal builds exclude local data. Existing Pages defaults, provider links and maturity behavior remain unchanged. See [local setup, refresh and publication controls](docs/local-catalog-preview.md).

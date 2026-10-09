@@ -31,13 +31,10 @@ import {
 } from "./ui.ts";
 
 import { SnapshotSource } from "./snapshot.ts";
-import type { CatalogSnapshot } from "./snapshot.ts";
+import snapshot from "virtual:viewport-catalog";
 import { TITLE_PAGE_LINKS } from "./title-links.ts";
 
-// No snapshot ships until source distribution clearance is recorded. Vite resolves
-// an authorized generated snapshot at build time; there are no runtime API calls.
-const generated = import.meta.glob<{ default: CatalogSnapshot }>("./generated/catalog.json", { eager: true });
-const snapshot = generated["./generated/catalog.json"]?.default;
+// Vite excludes private snapshots from normal builds. No browser API keys or calls.
 const snapshotSource = snapshot ? new SnapshotSource(snapshot) : null;
 const catalogSource = snapshotSource ?? new PrototypeCatalog();
 const availabilitySource = snapshotSource ?? new PrototypeAvailability();
