@@ -320,3 +320,24 @@ test('English catalog queries filter original language on every provider page an
  assert.equal(queries.length,12);assert.ok(queries.every(u=>u.searchParams.get('show_original_language')==='en'&&u.searchParams.get('output_language')==='en'));
  assert.equal(records.length,12);assert.ok(records.every(r=>r.title.originalLanguage==='en'&&r.title.languageEvidence==='availability-query'));
 });
+
+test('varied preview uses three independent orderings for every Big 6 provider and media kind', async()=>{
+ const queries:URL[]=[];
+ const client=createClients(keys,async input=>{
+  const u=new URL(String(input));
+  if(u.pathname.endsWith('/login'))return json({data:{token:'private-bearer'}});
+  if(u.hostname==='api4.thetvdb.com')return json({data:[]});
+  queries.push(u);
+  const index=queries.length;
+  return json({shows:Array.from({length:20},(_,i)=>sourceShow(index*100+i,u.searchParams.get('show_type')!,u.searchParams.get('catalogs')!.split('.')[0],false)),hasMore:false});
+ },'preview');
+ const report=await evaluateCatalog(client,stamp,{target:600,englishOnly:true,varied:true});
+ assert.equal(report.selected,600);
+ assert.deepEqual(report.kinds,{movie:300,series:300});
+ assert.equal(queries.length,36);
+ for(const provider of ['netflix','disney','hulu','prime','paramount','peacock'])for(const kind of ['movie','series']){
+  const orders=queries.filter(u=>u.searchParams.get('catalogs')===provider+'.subscription'&&u.searchParams.get('show_type')===kind).map(u=>u.searchParams.get('order_by'));
+  assert.deepEqual(orders,['popularity_alltime','rating','release_date']);
+ }
+ assert.ok(queries.every(u=>u.searchParams.get('order_direction')==='desc'&&u.searchParams.get('show_original_language')==='en'));
+});

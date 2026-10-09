@@ -30,7 +30,7 @@ export interface TrialReport {
 }
 const increment = (counts: Record<string, number>, key: string) => { counts[key] = (counts[key] ?? 0) + 1; };
 const knownLabels = new Set(['G', 'PG', 'PG-13', 'R', 'NC-17', 'TV-Y', 'TV-G', 'TV-Y7', 'TV-Y7-FV', 'TV-PG', 'TV-14', 'TV-MA', 'NR', 'UNRATED', 'NOT RATED']);
-interface Bucket { provider: string; kind: Kind; cursor: string | null; seen: Set<string>; done: boolean; records: TrialRecord[] }
+interface Bucket { order: string | null; provider: string; kind: Kind; cursor: string | null; seen: Set<string>; done: boolean; records: TrialRecord[] }
 
 function interleave(buckets: Bucket[]): TrialRecord[] {
   const output: TrialRecord[] = [];
@@ -46,9 +46,9 @@ function select(records: TrialRecord[], relax = false, target = 100): TrialRecor
   return chosen;
 }
 
-export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: string, options: { englishOnly?: boolean; wikidataFetcher?: typeof fetch; target?: 100 | 300; onRecords?: (records: TrialRecord[]) => void; onWikidataCandidate?: (titleId: string, rating: string, itemId: string) => void } = {}): Promise<TrialReport> {
+export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: string, options: { varied?: boolean; englishOnly?: boolean; wikidataFetcher?: typeof fetch; target?: 100 | 300 | 600; onRecords?: (records: TrialRecord[]) => void; onWikidataCandidate?: (titleId: string, rating: string, itemId: string) => void } = {}): Promise<TrialReport> {
   const target = options.target ?? 100;
-  if (![100, 300].includes(target)) throw new Error("Invalid catalog target");
+  if (![100, 300, 600].includes(target)) throw new Error("Invalid catalog target");
   const issues: Record<string, number> = {};
   const responseDiagnostics: Record<string, number> = {};
   const errors: TrialReport['errors'] = {};
@@ -64,13 +64,14 @@ export async function evaluateCatalog(clients: TrialHttpClient, checkedAt: strin
     if (['authentication', 'quota', 'missing-secret', 'invalid-response'].includes(category)) fatal = true;
     return category;
   };
-  const buckets: Bucket[] = PROVIDERS.flatMap(provider => (['movie', 'series'] as const).map(kind => ({ provider: provider.id, kind, cursor: null, seen: new Set<string>(), done: false, records: [] })));
+  const buckets: Bucket[] = PROVIDERS.flatMap(provider => (['movie', 'series'] as const).flatMap(kind => (options.varied ? ['popularity_alltime','rating','release_date'] : [null]).map(order => ({ order, provider: provider.id, kind, cursor: null, seen: new Set<string>(), done: false, records: [] }))));
   const chooseSample = (records: TrialRecord[]) => {
     const relax = (['movie', 'series'] as const).some(kind => records.filter(x => x.title.kind === kind).length < target / 2 && buckets.filter(x => x.kind === kind).every(x => x.done));
     return select(records, relax, target);
   };
   const fetchPage = async (bucket: Bucket) => {
     const params = new URLSearchParams({ country: 'us', catalogs: `${bucket.provider}.subscription`, show_type: bucket.kind, series_granularity: 'show', output_language: 'en' });
+    if(bucket.order) { params.set('order_by',bucket.order); params.set('order_direction','desc'); }
     if(options.englishOnly) params.set('show_original_language','en');
     if (bucket.cursor) params.set('cursor', bucket.cursor);
     try {

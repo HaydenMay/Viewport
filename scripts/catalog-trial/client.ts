@@ -12,7 +12,7 @@ export class TrialError extends Error {
 }
 
 const bases = { availability: 'https://api.movieofthenight.com/v4', tvdb: 'https://api4.thetvdb.com/v4' };
-const profiles = { trial: { availability: 25, tvdb: 260 }, preview: { availability: 75, tvdb: 700 } };
+const profiles = { trial: { availability: 25, tvdb: 260 }, preview: { availability: 120, tvdb: 1300 } };
 export type CatalogProfile = keyof typeof profiles;
 export class TrialHttpClient {
   readonly caps: { availability: number; tvdb: number };

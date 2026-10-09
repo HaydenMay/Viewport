@@ -25,11 +25,11 @@ try {
   let records: TrialRecord[] = [];
   const stamp = new Date().toISOString();
   const report = await evaluateCatalog(clients, stamp, {
-    target: 300, englishOnly: true, wikidataFetcher: fetch,
+    target: 600, varied: true, englishOnly: true, wikidataFetcher: fetch,
     onRecords: selected => { records = selected; },
     onWikidataCandidate: (id, rating, itemId) => candidates.set(id, {rating,itemId}),
   });
-  let summary = formatReport(report).replace('# Viewport catalog trial', '# Viewport 300-title catalog preview');
+  let summary = formatReport(report).replace('# Viewport catalog trial', '# Viewport 600-title varied catalog preview');
   if (report.completion !== 'failed' && records.length) {
     const snapshot = buildSnapshot(records, stamp, candidates, true);
     summary += '\nLanguage policy: English original language, confirmed by the documented availability-query filter; this does not certify provider audio tracks. Unknown-language records are excluded.\n';
@@ -37,7 +37,8 @@ try {
     const titles = await loadLaunchableCatalog(source, source, new PrototypeLauncher(snapshot.links));
     const prefs = defaultPreferences();
     const counts = {
-      normalized: snapshot.titles.length, withAcceptedTitleLinks: titles.length,
+      normalized: snapshot.titles.length,
+      titleInitials: snapshot.titles.reduce<Record<string,number>>((counts,title)=>{const initial=title.name[0]?.toUpperCase()??'?';counts[initial]=(counts[initial]??0)+1;return counts;},{}), withAcceptedTitleLinks: titles.length,
       knownRatings: snapshot.titles.filter(x => x.ageLevel !== null).length,
       unknownRatings: snapshot.titles.filter(x => x.ageLevel === null).length,
       defaultDiscovery: filterTitles(titles,prefs).length,

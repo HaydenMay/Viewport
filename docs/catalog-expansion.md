@@ -35,3 +35,9 @@ Ask each provider to confirm: Viewport is a commercial consumer streaming-discov
 The real 100-title sample had 22 recognized TheTVDB ratings, 68 missing US ratings, seven unresolved matches, two unrecognized and one explicitly unrated. Wikidata found ten movie ratings, including seven potential fills and no disagreements, raising potential combined coverage to 29/100. Full TheTVDB responses improved none of six targeted checks. TV coverage remains a gap. Source references are not guarantees of accuracy.
 
 Genres are available, but only Horror genre is automatically flagged. Scary themes, seasonal content, violence, sexual content and language are unknown for imported titles; empty tags do not imply safety. Details disclose genre-only coverage. Hard parental controls/PIN protection remain out of scope. The live site still uses 24 fixtures until distribution permission and a publishable snapshot are available.
+
+## Representative sampling
+
+Private preview refreshes target 600 records, balanced between movies and series and interleaved across the Big 6. Every provider/media pair has independent paginated popularity_alltime, rating, and release_date queries, all descending, with English-original and US included-subscription constraints. Provider documentation specifies alphabetical original_title as the default; relying on it caused the previous sample to stop at A. Independent cursors prevent mixing query streams. Duplicate IDs merge before selection. This is a varied bounded sample, not a complete catalog or guaranteed equal A–Z coverage; imported popularity never controls household filtering. Aggregate refresh reports include title-initial counts to expose sampling bias. Caps: 120 availability requests and 1,300 TheTVDB requests, including retries/authentication. No user-time live API requests.
+
+Query contract: https://github.com/movieofthenight/streaming-availability-api/blob/main/openapi.yaml
