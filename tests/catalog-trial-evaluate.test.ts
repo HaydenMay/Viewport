@@ -329,10 +329,11 @@ test('varied preview uses three independent orderings for every Big 6 provider a
   if(u.hostname==='api4.thetvdb.com')return json({data:[]});
   queries.push(u);
   const index=queries.length;
-  return json({shows:Array.from({length:20},(_,i)=>sourceShow(index*100+i,u.searchParams.get('show_type')!,u.searchParams.get('catalogs')!.split('.')[0],false)),hasMore:false});
+  return json({shows:Array.from({length:20},(_,i)=>sourceShow(index*100+i,u.searchParams.get('show_type')!,u.searchParams.get('catalogs')!.split('.')[0],true)),hasMore:false});
  },'preview');
  const report=await evaluateCatalog(client,stamp,{target:600,englishOnly:true,varied:true,wikidataFetcher:async()=>json({results:{bindings:[]}})});
  assert.equal(report.selected,600);
+ assert.equal(report.wikidata?.requests,12);
  assert.deepEqual(report.kinds,{movie:300,series:300});
  assert.equal(queries.length,36);
  for(const provider of ['netflix','disney','hulu','prime','paramount','peacock'])for(const kind of ['movie','series']){
