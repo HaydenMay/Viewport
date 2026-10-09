@@ -76,3 +76,7 @@ Results now explain why titles are hidden, and maturity-blocked searches have a 
 ## Local API catalog testing
 
 `npm run catalog:local` generates an ignored, private snapshot targeting 300 titles; `npm run dev:catalog` loads it on loopback only. Public catalog approval defaults to false, and normal builds exclude local data. Existing Pages defaults, provider links and maturity behavior remain unchanged. See [local setup, refresh and publication controls](docs/local-catalog-preview.md).
+
+### Catalog QA improvements
+
+Search now matches title names only, including single-letter and partial queries, ordered by exact title, prefix, then substring. Content warnings and maturity/provider restrictions remain unchanged. Original abstract SVG fallback covers use genre palettes and stable title-ID variations, with no per-title asset work or extra requests. Mobile headings wrap, the wordmark fits enlarged text, and the search input avoids iPhone focus zoom. Responsive QA includes active searches and 200% text at 320–1440px widths.

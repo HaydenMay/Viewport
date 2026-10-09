@@ -143,7 +143,7 @@ test("content-topic controls compose without changing maturity", () => {
     ["a"],
   );
 });
-test("search matches title, genre, and summary without case/diacritic sensitivity", () => {
+test("search matches only titles without case/diacritic sensitivity", () => {
   assert.equal(
     filterTitles([base], defaultPreferences(), "  OCEAN ").length,
     1,
@@ -153,7 +153,7 @@ test("search matches title, genre, and summary without case/diacritic sensitivit
       .length,
     1,
   );
-  assert.equal(filterTitles([base], defaultPreferences(), "journey").length, 1);
+  assert.equal(filterTitles([base], defaultPreferences(), "journey").length, 0);
   assert.equal(
     filterTitles([base], defaultPreferences(), "unrelated").length,
     0,
@@ -227,11 +227,11 @@ test('no maturity limit includes unknown ratings while explicit search retains h
   assert.equal(filterTitles([fixture({ ageLevel: 3 })], { ...defaultPreferences(), maxAgeLevel: 2 }, 'Ocean').length, 0);
 });
 
-test('explicit searches reveal content-hidden matches and rank title matches before descriptions', () => {
+test('explicit title searches reveal content-hidden matches and exclude descriptions', () => {
   const hidden = fixture({ id: 'hidden', name: 'Alien', topics: ['horror'], ageLevel: 3 });
   const description = fixture({ id: 'summary', name: 'Space Journey', summary: 'An alien visitor.' });
   const prefs = { ...defaultPreferences(), maxAgeLevel: null };
-  assert.deepEqual(ids(filterTitles([description, hidden], prefs, 'ALI')), ['hidden', 'summary']);
+  assert.deepEqual(ids(filterTitles([description, hidden], prefs, 'ALI')), ['hidden']);
   assert.deepEqual(ids(filterTitles([hidden], prefs)), []);
   assert.deepEqual(ids(filterTitles([hidden], { ...prefs, providerIds: [] }, 'Alien')), []);
 });
@@ -258,3 +258,10 @@ test('filter explanations partition scoped matching titles without exposing matu
   assert.equal(explainFiltering(sample,prefs,'Ocean','prime').matching,0);
   assert.ok(!JSON.stringify(searched).includes('Adult'));
 });
+
+ test('single letters match names only and exact/start/contains ranking is consistent', async () => {
+ const titles=[fixture({id:'contains',name:'The Bear'}),fixture({id:'metadata',name:'Ocean',genres:['Biography'],summary:'B movie'}),fixture({id:'starts',name:'Bear Country'}),fixture({id:'exact',name:'Bear'})];
+ assert.deepEqual(ids(filterTitles(titles,defaultPreferences(),' B ')),['exact','starts','contains']);
+ assert.deepEqual(ids(filterTitles(titles,defaultPreferences(),'BEAR')),['exact','starts','contains']);
+ const {explainFiltering}=await import('../src/filter.ts');assert.equal(explainFiltering(titles,defaultPreferences(),'B').matching,3);
+ });

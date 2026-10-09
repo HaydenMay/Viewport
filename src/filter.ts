@@ -29,7 +29,7 @@ function hiddenReason(title: Title, preferences: Preferences, searching: boolean
 function scopedMatch(title: Title, preferences: Preferences, search: string, provider: ProviderId | null): boolean {
   return title.providerIds.some(id => preferences.providerIds.includes(id)) &&
     (!provider || (preferences.providerIds.includes(provider) && title.providerIds.includes(provider))) &&
-    (!search || normalize([title.name, ...title.genres, title.summary].join(" ")).includes(search));
+    (!search || normalize(title.name).includes(search));
 }
 // Aggregate-only feedback: names, identifiers and artwork of restricted matches
 // never leave the filtering layer. Each hidden title gets one reason, with maturity first.

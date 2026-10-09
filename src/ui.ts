@@ -1,3 +1,4 @@
+import { generatedCoverArt } from "./cover-art.ts";
 import type {
   LaunchPlatform,
   LaunchTarget,
@@ -96,9 +97,8 @@ export function cover(
   const replacement = !title.art || shouldReplaceArtwork(title, preferences);
   const name = escapeHtml(title.name);
   return `<div class="cover ${className} ${replacement ? "cover-neutral" : ""}" style="--cover-a:${title.palette[0]};--cover-b:${title.palette[1]}">
-    ${replacement ? '<div class="neutral-orbit"></div>' : `<img src="./artwork/${title.id}.svg" alt="" loading="lazy" width="600" height="900" />`}
+    ${replacement ? generatedCoverArt(title) : `<img src="./artwork/${title.id}.svg" alt="" loading="lazy" width="600" height="900" />`}
     <span class="cover-kind">${title.kind}</span>
-    ${replacement ? `<span class="neutral-label">${icon("eye")} Neutral artwork</span>` : ""}
     <div class="cover-title ${title.name.length > 18 ? "title-long" : ""}">${name}</div>
   </div>`;
 }
@@ -117,7 +117,7 @@ export function titleCard(title: Title, preferences: Preferences, searching = fa
 export function feature(title: Title, preferences: Preferences): string {
   const replacement = !title.art || shouldReplaceArtwork(title, preferences);
   return `<article class="feature" style="--feature-a:${title.palette[0]}">
-    <div class="feature-art ${replacement ? "feature-neutral" : ""}" aria-hidden="true">${replacement ? '<div class="feature-orbit"></div>' : `<img src="./artwork/${title.id}.svg" alt="" width="600" height="900" />`}</div>
+    <div class="feature-art ${replacement ? "feature-neutral" : ""}" aria-hidden="true">${replacement ? generatedCoverArt(title) : `<img src="./artwork/${title.id}.svg" alt="" width="600" height="900" />`}</div>
     <div class="feature-copy">
       <span class="eyebrow">FROM YOUR CATALOG</span>
       <h2>${escapeHtml(title.name)}</h2>
@@ -125,7 +125,7 @@ export function feature(title: Title, preferences: Preferences): string {
       <p class="feature-summary">${escapeHtml(title.summary)}</p>
       <button class="button-primary" data-title="${title.id}">${icon("play")} Explore title</button>
     </div>
-    <span class="illustration-note">Original illustration${replacement ? " · neutral artwork" : ""}</span>
+    <span class="illustration-note">${replacement ? "Original graphic cover" : "Original illustration"}</span>
   </article>`;
 }
 
