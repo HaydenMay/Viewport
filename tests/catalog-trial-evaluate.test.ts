@@ -331,7 +331,7 @@ test('varied preview uses three independent orderings for every Big 6 provider a
   const index=queries.length;
   return json({shows:Array.from({length:20},(_,i)=>sourceShow(index*100+i,u.searchParams.get('show_type')!,u.searchParams.get('catalogs')!.split('.')[0],false)),hasMore:false});
  },'preview');
- const report=await evaluateCatalog(client,stamp,{target:600,englishOnly:true,varied:true});
+ const report=await evaluateCatalog(client,stamp,{target:600,englishOnly:true,varied:true,wikidataFetcher:async()=>json({results:{bindings:[]}})});
  assert.equal(report.selected,600);
  assert.deepEqual(report.kinds,{movie:300,series:300});
  assert.equal(queries.length,36);

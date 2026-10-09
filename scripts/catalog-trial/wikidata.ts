@@ -29,7 +29,7 @@ export async function evaluateWikidata(records: TrialRecord[], fetcher: typeof f
   const ids = [...new Set(movies.map(x => x.title.sourceIds.imdb).filter((x): x is string => !!x && /^tt\d+$/.test(x)))];
   const found = new Map<string, Candidate[]>();
   const failed = new Set<string>();
-  if (movies.length > (options.maxMovies ?? 100) || (options.maxMovies ?? 100) > 300) throw new LookupError('budget');
+  if (movies.length > (options.maxMovies ?? 100) || (options.maxMovies ?? 100) > 600) throw new LookupError('budget');
   for (let offset = 0; offset < ids.length; offset += 25) {
     const batch = ids.slice(offset, offset + 25);
     const query = `PREFIX wd: <http://www.wikidata.org/entity/>
