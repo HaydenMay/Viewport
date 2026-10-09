@@ -1539,7 +1539,7 @@ dialog::backdrop {
   min-width: 0;
 }
 .title-grid {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 11.5rem), 1fr));
 }
 .quick-filters {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr));
@@ -1568,12 +1568,12 @@ dialog::backdrop {
 }
 @media (max-width: 1000px) {
   .title-grid {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.8rem), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.8rem), 1fr));
   }
 }
 @media (max-width: 760px) {
   .title-grid {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
   }
   .quick-filters {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
@@ -1584,7 +1584,7 @@ dialog::backdrop {
 }
 @media (max-width: 500px) {
   .title-grid {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 7.9rem), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 7.9rem), 1fr));
   }
   .quick-filters {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));

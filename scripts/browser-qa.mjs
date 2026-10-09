@@ -144,8 +144,10 @@ try {
     "Filters change results immediately; local preferences survive reload.",
   );
 
+  const catalogCardWidth=await page.locator(".title-card").first().evaluate(card=>card.getBoundingClientRect().width);
   await page.locator("#search").fill("stranger");
   await waitCount(1);
+  assert.ok(await page.locator(".title-card").evaluate(card=>card.getBoundingClientRect().width)<=catalogCardWidth+1,"single search result must keep normal grid width");
   await page.locator('.quick-filters [data-preference="hideHorror"]').check();
   await waitCount(1);
   assert.match(await page.locator('.preference-warning').innerText(), /Hidden by your content preferences/);
