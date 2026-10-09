@@ -80,3 +80,5 @@ Results now explain why titles are hidden, and maturity-blocked searches have a 
 ### Catalog QA improvements
 
 Search now matches title names only, with one-character prefix matching and longer partial queries, ordered by exact title, prefix, then substring. Content warnings and maturity/provider restrictions remain unchanged. Original abstract SVG fallback covers use genre palettes and stable title-ID variations, with no per-title asset work or extra requests. Mobile headings wrap, the wordmark fits enlarged text, and the search input avoids iPhone focus zoom. Responsive QA includes active searches and 200% text at 320–1440px widths.
+
+Private catalog refreshes now target 600 English-original titles using three independent query streams per provider/media kind (popular, highly rated, and recent), avoiding the API's default alphabetical-prefix sampling. The live normalized count and accepted-link count are reported separately; maturity and provider choices further reduce visible results. Refresh summaries include title-initial distribution.

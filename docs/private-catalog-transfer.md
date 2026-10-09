@@ -2,7 +2,7 @@
 
 The owner-only, server-code-protected preview is separate from public GitHub Pages. Public catalog approval remains false.
 
-`Generate encrypted private catalog` uses the existing repository API secrets and the same bounded 300-title ingestion pipeline. It runs manually, or once when `config/private-preview-public.pem` changes on main. Ordinary app edits do not refresh the catalog or spend API quota.
+`Generate encrypted private catalog` uses the existing repository API secrets and the same bounded 600-title varied ingestion pipeline. It runs manually, or once when `config/private-preview-public.pem` changes on main. Ordinary app edits do not refresh the catalog or spend API quota.
 
 Only normalized records held in memory are encrypted. AES-256-GCM authenticates the payload; RSA-OAEP-SHA256 wraps a random per-export encryption key. Only the public wrapping key is committed. The private decryption key is held privately by the operator, never in the repository, logs or browser. The workflow uploads ciphertext only as a one-day Actions artifact. No plaintext catalog, posters, credentials or decryption key are uploaded. Aggregate reports remain public.
 
@@ -14,7 +14,7 @@ Imported launch URLs remain validated candidates rather than newly verified nati
 
 ## English-original catalog policy
 
-300-title preview ingestion now requests `show_original_language=en` on every availability search page, separately from `output_language=en`. The provider documents the former as filtering the show's original language. The documented show response does not carry an original-language field, so normalized records retain `originalLanguage: en` with `languageEvidence: availability-query` based on this source-side query guarantee. This is source-reported evidence, not independently verified speech or audio-track availability. Unfiltered/unknown-language records cannot enter an English-only snapshot, including search. Existing snapshots without this evidence must be refreshed, not relabeled.
+Preview ingestion now requests `show_original_language=en` on every availability search page, separately from `output_language=en`. The provider documents the former as filtering the show's original language. The documented show response does not carry an original-language field, so normalized records retain `originalLanguage: en` with `languageEvidence: availability-query` based on this source-side query guarantee. This is source-reported evidence, not independently verified speech or audio-track availability. Unfiltered/unknown-language records cannot enter an English-only snapshot, including search. Existing snapshots without this evidence must be refreshed, not relabeled.
 
 English display titles from the availability query are preserved instead of replaced by TheTVDB's default/original name. No title-string or English-overview heuristic establishes spoken language. Foreign-original titles with English dubbing are excluded for this test policy. Multi-language works depend on the source's primary original-language classification.
 
