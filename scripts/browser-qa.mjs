@@ -151,6 +151,13 @@ try {
   assert.match(await page.locator('.preference-warning').innerText(), /Hidden by your content preferences/);
   await page.locator(".quick-filters [data-maturity]").selectOption("1");
   await waitCount(0);
+  assert.match(await page.locator('.empty-state h3').innerText(), /Matches hidden by maturity settings/);
+  assert.match(await page.locator('#results-count').innerText(), /1 above maturity limit/);
+  assert.equal(await page.locator('.title-card').count(), 0);
+  await page.locator('#search').fill('no-such-loaded-title-zzzz');
+  await waitCount(0);
+  assert.match(await page.locator('.empty-state h3').innerText(), /No matches in your selected services/);
+  assert.ok(!(await page.locator('#results-count').innerText()).includes('above maturity limit'));
   await page.locator(".quick-filters [data-maturity]").selectOption("3");
   await page.locator("#search").fill("");
   await page.locator('.quick-filters [data-preference="hideSeasonal"]').check();

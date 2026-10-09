@@ -235,3 +235,26 @@ test('explicit searches reveal content-hidden matches and rank title matches bef
   assert.deepEqual(ids(filterTitles([hidden], prefs)), []);
   assert.deepEqual(ids(filterTitles([hidden], { ...prefs, providerIds: [] }, 'Alien')), []);
 });
+
+test('filter explanations partition scoped matching titles without exposing maturity-blocked titles', async () => {
+  const { explainFiltering } = await import('../src/filter.ts');
+  const sample = [
+    base,
+    fixture({ id:'adult', ageLevel:3, topics:['horror'], name:'Ocean Adult' }),
+    fixture({ id:'unknown', ageLevel:null, name:'Ocean Unknown' }),
+    fixture({ id:'horror', topics:['horror'] }),
+    fixture({ id:'seasonal', seasonal:['halloween'] }),
+    fixture({ id:'topic', topics:['language'] }),
+    fixture({ id:'other-provider', providerIds:['prime'], ageLevel:null }),
+  ];
+  const prefs={...defaultPreferences(),maxAgeLevel:2 as const,blockedTopics:['language' as const]};
+  assert.deepEqual(explainFiltering(sample,prefs), {
+    matching:6, showing:1, hidden:{maturity:1,unknownRating:1,horror:1,seasonal:1,content:1},
+  });
+  const searched=explainFiltering(sample,prefs,'Ocean');
+  assert.equal(searched.showing,4);
+  assert.deepEqual(searched.hidden,{maturity:1,unknownRating:1,horror:0,seasonal:0,content:0});
+  assert.equal(explainFiltering(sample,prefs,'absent').matching,0);
+  assert.equal(explainFiltering(sample,prefs,'Ocean','prime').matching,0);
+  assert.ok(!JSON.stringify(searched).includes('Adult'));
+});

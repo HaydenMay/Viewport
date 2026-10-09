@@ -13,19 +13,43 @@ export function hiddenByContentPreferences(title: Title, preferences: Preference
     title.topics.some(topic => preferences.blockedTopics.includes(topic));
 }
 
+type HiddenReason = "maturity" | "unknownRating" | "horror" | "seasonal" | "content";
+function hiddenReason(title: Title, preferences: Preferences, searching: boolean): HiddenReason | null {
+  if (preferences.maxAgeLevel !== null) {
+    if (title.ageLevel === null) return "unknownRating";
+    if (title.ageLevel > preferences.maxAgeLevel) return "maturity";
+  }
+  if (!searching) {
+    if (preferences.hideHorror && title.topics.some(x => x === "horror" || x === "scary")) return "horror";
+    if (preferences.hideSeasonal && title.seasonal.length) return "seasonal";
+    if (title.topics.some(x => preferences.blockedTopics.includes(x))) return "content";
+  }
+  return null;
+}
+function scopedMatch(title: Title, preferences: Preferences, search: string, provider: ProviderId | null): boolean {
+  return title.providerIds.some(id => preferences.providerIds.includes(id)) &&
+    (!provider || (preferences.providerIds.includes(provider) && title.providerIds.includes(provider))) &&
+    (!search || normalize([title.name, ...title.genres, title.summary].join(" ")).includes(search));
+}
+// Aggregate-only feedback: names, identifiers and artwork of restricted matches
+// never leave the filtering layer. Each hidden title gets one reason, with maturity first.
+export function explainFiltering(titles: Title[], preferences: Preferences, query = "", provider: ProviderId | null = null) {
+  const search = normalize(query);
+  const report = { matching: 0, showing: 0, hidden: { maturity: 0, unknownRating: 0, horror: 0, seasonal: 0, content: 0 } };
+  for (const title of titles) {
+    if (!scopedMatch(title, preferences, search, provider)) continue;
+    report.matching++;
+    const reason = hiddenReason(title, preferences, !!search);
+    if (reason) report.hidden[reason]++; else report.showing++;
+  }
+  return report;
+}
+
 export function filterTitles(
   titles: Title[], preferences: Preferences, query = "", provider: ProviderId | null = null,
 ): Title[] {
   const search = normalize(query);
-  const matches = titles.filter(title => {
-    if (!title.providerIds.some(id => preferences.providerIds.includes(id))) return false;
-    if (provider && (!preferences.providerIds.includes(provider) || !title.providerIds.includes(provider))) return false;
-    // A selected maturity ceiling is a hard restriction, including during search.
-    // Legacy allowUnrated values cannot bypass it.
-    if (preferences.maxAgeLevel !== null && (title.ageLevel === null || title.ageLevel > preferences.maxAgeLevel)) return false;
-    if (!search && hiddenByContentPreferences(title, preferences)) return false;
-    return !search || normalize([title.name, ...title.genres, title.summary].join(" ")).includes(search);
-  });
+  const matches = titles.filter(title => scopedMatch(title, preferences, search, provider) && !hiddenReason(title, preferences, !!search));
   const rank = (title: Title) => {
     const name = normalize(title.name);
     return name === search ? 0 : name.startsWith(search) ? 1 : name.includes(search) ? 2 : 3;

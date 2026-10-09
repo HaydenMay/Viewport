@@ -48,3 +48,23 @@ test('Wikidata only fills missing ratings and turns source disagreements into un
   assert.equal(snapshot.titles[2].ageLevel, null);
   assert.equal(records[0].title.ratings.state, 'missing');
 });
+
+test('duplicate records merge offers without inventing missing metadata or refreshing old availability dates', async () => {
+  const first=item(1);first.title.year=null;first.title.summary=null;first.title.genres=[];
+  first.title.ratings=classifyRatings([{country:'usa',name:'TV-14'}],'movie');
+  first.offers[0].checkedAt='2026-09-01T00:00:00Z';
+  const duplicate=structuredClone(first);
+  duplicate.offers.push({...duplicate.offers[0],providerId:'hulu',url:'https://www.hulu.com/movie/synthetic-title',checkedAt:stamp});
+  const snapshot=buildSnapshot([first,duplicate],stamp,new Map());
+  assert.equal(snapshot.titles.length,1);
+  assert.equal(snapshot.offers.length,2);
+  assert.equal(snapshot.titles[0].year,null);
+  assert.equal(snapshot.titles[0].summary,'Description unavailable.');
+  assert.equal(snapshot.titles[0].ageLevel,null);
+  assert.deepEqual(snapshot.titles[0].genres,[]);
+  assert.equal(snapshot.offers[0].checkedAt,'2026-09-01T00:00:00Z');
+  const source=new SnapshotSource(snapshot);
+  const titles=await loadLaunchableCatalog(source,source,new PrototypeLauncher(snapshot.links));
+  assert.equal(filterTitles(titles,{...defaultPreferences(),providerIds:['hulu'],maxAgeLevel:null}).length,1);
+  assert.equal(filterTitles(titles,{...defaultPreferences(),providerIds:['netflix'],maxAgeLevel:2}).length,0);
+});

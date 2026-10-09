@@ -1,4 +1,5 @@
 import "./styles.css";
+import { availabilityStatus } from "./availability-status.ts";
 import type {
   AgeLevel,
   LaunchPlatform,
@@ -9,7 +10,7 @@ import type {
   Title,
 } from "./domain.ts";
 import { PrototypeAvailability, PrototypeCatalog } from "./catalog.ts";
-import { filterTitles, hiddenByContentPreferences, shouldReplaceArtwork } from "./filter.ts";
+import { explainFiltering, filterTitles, hiddenByContentPreferences, shouldReplaceArtwork } from "./filter.ts";
 import { loadLaunchableCatalog, titleLinkedOffers } from "./discovery.ts";
 import {
   defaultPreferences,
@@ -149,33 +150,39 @@ function renderProviders(): void {
 }
 function renderCatalog(): void {
   const visible = visibleTitles();
-  const contentAllowed = filterTitles(titles, preferences, "", providerScope);
-  const subscribed = titles.filter((title) =>
-    title.providerIds.some(
-      (id) =>
-        preferences.providerIds.includes(id) &&
-        (!providerScope || id === providerScope),
-    ),
-  );
-  const hidden = subscribed.length - contentAllowed.length;
+  const report = explainFiltering(titles, preferences, query, providerScope);
+  const subscribed = titles.filter(title => title.providerIds.some(id => preferences.providerIds.includes(id) && (!providerScope || id === providerScope)));
+  const maturityBlocked = report.hidden.maturity + report.hidden.unknownRating;
+  const reasons = [
+    report.hidden.maturity ? `${report.hidden.maturity} above maturity limit` : "",
+    report.hidden.unknownRating ? `${report.hidden.unknownRating} without a known rating` : "",
+    report.hidden.horror ? `${report.hidden.horror} horror / scary` : "",
+    report.hidden.seasonal ? `${report.hidden.seasonal} seasonal` : "",
+    report.hidden.content ? `${report.hidden.content} other content preferences` : "",
+  ].filter(Boolean);
   const noLinks = preferences.providerIds.length > 0 && subscribed.length === 0;
   const emptyTitle = !preferences.providerIds.length
     ? "Which services do you watch?"
     : noLinks
       ? "Title links are still being checked"
-      : "Nothing matches these choices";
+      : query.trim() && maturityBlocked
+        ? "Matches hidden by maturity settings"
+        : query.trim() ? "No matches in your selected services" : "Nothing matches these choices";
   const emptyDescription = !preferences.providerIds.length
     ? "Choose the services you subscribe to and build your combined catalog."
     : noLinks
       ? `No checked title destinations are available for ${providerScope ? providerById(providerScope).name : "your selected services"} yet. Browse another selected service or choose one in Preferences.`
-      : "Try a different search or adjust your content preferences.";
+      : query.trim() && maturityBlocked
+        ? "Matching titles exceed your maturity limit or have no known rating. Your current limit keeps them hidden."
+        : query.trim() ? "Try another title or a shorter search. This prototype only searches its loaded catalog."
+        : "Adjust your content preferences to see more titles.";
   byId("results-heading").textContent = query.trim()
     ? "Search results"
     : providerScope
       ? `On ${providerById(providerScope).name}`
       : "Across your services";
   byId("results-count").textContent =
-    `${visible.length} title${visible.length === 1 ? "" : "s"} showing${hidden ? ` · ${hidden} hidden by your content preferences` : ""}`;
+    `${visible.length} title${visible.length === 1 ? "" : "s"} showing${reasons.length ? ` · Hidden: ${reasons.join(" · ")}` : ""}`;
   byId("feature").innerHTML =
     visible.length && !query.trim() ? feature(visible[0], preferences) : "";
   byId("title-grid").innerHTML = visible.length
@@ -224,7 +231,7 @@ async function showDetails(title: Title, open = true): Promise<void> {
     ),
   ];
   byId("details-body").innerHTML =
-    `<button class="icon-button detail-close" data-close="details-dialog" aria-label="Close title details">${icon("close")}</button><div class="detail-layout">${cover(title, preferences, "detail-cover")}<div class="detail-copy"><span class="eyebrow subtle">${title.kind.toUpperCase()} · ${title.metadata ? "CATALOG METADATA" : "SAMPLE METADATA"}</span><h2 id="details-title">${escapeHtml(title.name)}</h2>${query.trim() && hiddenByContentPreferences(title, preferences) ? '<p class="preference-warning">Hidden by your content preferences. Shown because you searched.</p>' : ""}<p class="detail-meta">${title.year ?? "Year unavailable"} <span>·</span> ${title.rating} <span>·</span> ${title.duration}</p><p class="genre-line">${title.genres.map(escapeHtml).join(" · ")}</p><p class="detail-summary">${escapeHtml(title.summary)}</p><div class="annotation-block"><h3>${title.metadata ? "Content information" : "Sample content notes"}</h3><div class="content-tags">${tags.length ? tags.map((tag) => `<span>${tag}</span>`).join("") : (title.metadata ? "<span>No known genre flags</span>" : "<span>No selected sample flags</span>")}</div><p>${title.metadata ? "Genre information only. Scary themes, seasonal content, violence, sexual content and language have not been reviewed." : "Illustrative annotations, not a complete content review."}</p>${shouldReplaceArtwork(title, preferences) ? `<p class="art-notice">${icon("eye")} Neutral artwork applied. The title stays available.</p>` : ""}</div><div class="watch-block"><h3>Watch with your services</h3><p>${title.metadata ? `US subscription availability · checked ${escapeHtml(title.metadata.checkedAt.slice(0,10))}` : "Sample US subscription availability"}</p><div class="watch-actions">${subscribedOffers.map(watchAction).join("")}${debugLinks ? subscribedOffers.map((offer) => launchDiagnostics(title, offer, launcher.resolve(offer, diagnosticPlatform), diagnosticPlatform)).join("") : ""}</div><div class="launch-note">${icon("arrow")}<span>Opens this title in the provider app or on its website. If the app does not open, the title page is available in your browser. Sign-in, region, or plan restrictions may apply.</span></div></div></div></div>`;
+    `<button class="icon-button detail-close" data-close="details-dialog" aria-label="Close title details">${icon("close")}</button><div class="detail-layout">${cover(title, preferences, "detail-cover")}<div class="detail-copy"><span class="eyebrow subtle">${title.kind.toUpperCase()} · ${title.metadata ? "CATALOG METADATA" : "SAMPLE METADATA"}</span><h2 id="details-title">${escapeHtml(title.name)}</h2>${query.trim() && hiddenByContentPreferences(title, preferences) ? '<p class="preference-warning">Hidden by your content preferences. Shown because you searched.</p>' : ""}<p class="detail-meta">${title.year ?? "Year unavailable"} <span>·</span> ${title.rating} <span>·</span> ${title.duration}</p><p class="genre-line">${title.genres.map(escapeHtml).join(" · ")}</p><p class="detail-summary">${escapeHtml(title.summary)}</p><div class="annotation-block"><h3>${title.metadata ? "Content information" : "Sample content notes"}</h3><div class="content-tags">${tags.length ? tags.map((tag) => `<span>${tag}</span>`).join("") : (title.metadata ? "<span>No known genre flags</span>" : "<span>No selected sample flags</span>")}</div><p>${title.metadata ? "Genre information only. Scary themes, seasonal content, violence, sexual content and language have not been reviewed." : "Illustrative annotations, not a complete content review."}</p>${shouldReplaceArtwork(title, preferences) ? `<p class="art-notice">${icon("eye")} Neutral artwork applied. The title stays available.</p>` : ""}</div><div class="watch-block"><h3>Watch with your services</h3><p>${title.metadata ? escapeHtml(availabilityStatus(subscribedOffers.map(offer => offer.checkedAt))) : "Sample US subscription availability"}</p><div class="watch-actions">${subscribedOffers.map(watchAction).join("")}${debugLinks ? subscribedOffers.map((offer) => launchDiagnostics(title, offer, launcher.resolve(offer, diagnosticPlatform), diagnosticPlatform)).join("") : ""}</div><div class="launch-note">${icon("arrow")}<span>Opens this title in the provider app or on its website. If the app does not open, the title page is available in your browser. Sign-in, region, or plan restrictions may apply.</span></div></div></div></div>`;
   openTitleId = title.id;
   if (open) dialog("details-dialog").showModal();
 }

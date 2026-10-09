@@ -92,3 +92,11 @@ Independent read-only code review identified malformed TVDB envelopes and unnece
 - A temporary **synthetic** 300-title snapshot verified 60-card initial rendering, Show more, full-catalog partial search, unknown-rating labels, exclusion under a limit and persisted No maturity limit. It was removed before the release build. This is not a real 300-title ingestion result.
 - Real 300-title preview requires a manual workflow run with repository secrets. No real source data was published. Live catalog remains 24 fixtures; source distribution clarification is pending.
 - Final browser bundle: `index-ClKbXrgz.js`, `index-C4LcUMOx.css`. Pages workflow is unchanged and remains independent of API keys.
+
+## Discovery feedback validation — 2026-10-09 UTC
+
+- 79 tests pass; strict TypeScript and production build pass (`index-BIzfCPnu.js`, existing `index-C4LcUMOx.css`). The environment emits its existing non-fatal npm proxy warning.
+- New tests cover query-scoped, non-overlapping reason counts, maturity restrictions during search, missing metadata, duplicates across providers and preservation of availability check dates.
+- Snapshot offer dates were previously discarded during normalization; a failing test reproduced this and the snapshot now retains them without changing launch URLs.
+- Live catalog still contains 24 fixtures. No source data or images were published and no API quota was consumed.
+- Production browser QA passes at `/Viewport/`: desktop, both iPad orientations, 390px and 320px mobile, 200% text, saved/blocked storage and existing title destination/navigation checks. New assertions verify the maturity-blocked empty state and aggregate reason count versus a no-match query. No browser errors or failed local assets; mobile feedback visually inspected.

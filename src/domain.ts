@@ -55,6 +55,7 @@ export interface Offer {
   region: "US";
   access: "subscription";
   provenance: "prototype" | "movie-of-the-night";
+  checkedAt?: string;
 }
 export interface AvailabilitySource {
   offersFor(titleId: string): Promise<Offer[]>;

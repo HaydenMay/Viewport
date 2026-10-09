@@ -33,7 +33,7 @@ export function buildSnapshot(records: TrialRecord[], generatedAt: string, candi
     };
     snapshot.titles.push(entry);
     for (const offer of offers) {
-      if (!snapshot.offers.some(x => x.titleId === title.id && x.providerId === offer.providerId)) snapshot.offers.push({titleId:title.id,providerId:offer.providerId,region:'US',access:'subscription',provenance:'movie-of-the-night'});
+      if (!snapshot.offers.some(x => x.titleId === title.id && x.providerId === offer.providerId)) snapshot.offers.push({titleId:title.id,providerId:offer.providerId,region:'US',access:'subscription',provenance:'movie-of-the-night',checkedAt:offer.checkedAt});
       if (!offer.url || !offer.linkAccepted || snapshot.links.some(x => x.titleId === title.id && x.providerId === offer.providerId)) continue;
       const link = { titleId: title.id, providerId: offer.providerId, url: offer.url, checkedAt: offer.checkedAt, evidence: 'availability-api' as const };
       if (new PrototypeLauncher([link]).resolve(snapshot.offers.find(x => x.titleId === title.id && x.providerId === offer.providerId)!).exactTitleResolved) snapshot.links.push(link);

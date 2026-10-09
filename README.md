@@ -68,3 +68,7 @@ Every normal Watch URL and navigation policy remains unchanged. `?debug=links` a
 Maturity limits now exclude unknown ratings, while No maturity limit allows them. Explicit search may show content-hidden titles with a warning but respects maturity and service restrictions. New household defaults keep Prime and Peacock off; saved selections are preserved.
 
 The manual **Preview 300-title catalog** workflow reuses the ingestion pipeline and builds an app-ready snapshot in memory. It publishes counts only. No larger live catalog is shipped until source distribution terms are clarified. See [pipeline, refresh instructions and limitations](docs/catalog-expansion.md).
+
+## Discovery feedback
+
+Results now explain why titles are hidden, and maturity-blocked searches have a distinct empty state from no matches. Imported availability check dates are preserved; older checks carry a freshness notice. See [validation and the short iPhone checklist](docs/discovery-validation.md).
