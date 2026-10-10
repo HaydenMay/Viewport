@@ -24,7 +24,7 @@ An authorized build can later supply src/generated/catalog.json using this snaps
 
 ## Publication blocker
 
-TheTVDB's API terms restrict distribution of Data, and the current Movie of the Night developer terms forbid competing services and standalone data distribution while permitting end-user display and local caching. We need project-specific clarification that Viewport's consumer discovery functionality and a browser-readable static snapshot served by GitHub Pages are allowed. A registered key and a free tier do not settle this distribution question. Do not commit source records into the public repo as a shortcut.
+TheTVDB's API terms restrict distribution of Data, and the current Movie of the Night developer terms forbid competing services and standalone data distribution while permitting end-user display and local caching. Movie of the Night confirmed the described Viewport use case is allowed on October 10, 2026; see [source permissions](source-permissions.md). TheTVDB clarification for the browser-readable static snapshot remains outstanding. A registered key and a free tier do not settle this distribution question. Do not commit source records into the public repo as a shortcut.
 
 Relevant primary sources: [TheTVDB terms, API restrictions](https://www.thetvdb.com/tos) and [Movie of the Night developer terms, sections 3 and 6](https://developers.movieofthenight.com/terms-and-conditions). The latter is client-rendered; its current terms differ from the older GitHub TERMS.md. No posters or backdrops are authorized by these API terms alone.
 
